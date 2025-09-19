@@ -16,6 +16,35 @@ function Quiz() {
 
   const reviewMode = !!resultId;
 
+  const handleSubmit = async () => {
+    if (submitting || reviewMode || result) return;
+    setSubmitting(true);
+
+    try {
+      const formattedAnswers = Object.values(answers);
+      const res = await quizAPI.submit(quiz._id, formattedAnswers);
+
+      if (document.fullscreenElement) await document.exitFullscreen();
+
+      setResult({
+        score: res.data.score,
+        correctCount: res.data.correctCount,
+        wrongCount: res.data.wrongCount,
+        total: res.data.total,
+        percentage: res.data.percentage,
+        status: res.data.status,
+        userAnswers: answers,
+      });
+
+      alert("✅ Quiz submitted successfully!");
+    } catch (err) {
+      console.error("Failed to submit quiz:", err);
+      alert(`❌ Failed to submit quiz: ${err.response?.data?.message || err.message}`);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   // Fetch quiz or result
   useEffect(() => {
     const fetchQuiz = async () => {
@@ -49,10 +78,10 @@ function Quiz() {
     return () => clearInterval(timer);
   }, [started, timeLeft, reviewMode]);
 
-  // Auto-submit on timeout
+  // Auto-submit on timeout ✅ include handleSubmit
   useEffect(() => {
     if (timeLeft === 0 && started && !result && !reviewMode) handleSubmit();
-  }, [timeLeft, started, result, reviewMode]);
+  }, [timeLeft, started, result, reviewMode, handleSubmit]);
 
   // Track fullscreen exit
   useEffect(() => {
@@ -66,13 +95,13 @@ function Quiz() {
     return () => document.removeEventListener("fullscreenchange", handleExit);
   }, [started, reviewMode, result]);
 
-  // Auto-submit when exitCount reaches 3
+  // Auto-submit when exitCount reaches 3 ✅ include handleSubmit
   useEffect(() => {
     if (exitCount >= 3 && started && !result && !reviewMode) {
       alert("❌ You exited fullscreen too many times. Exam ended.");
       handleSubmit();
     }
-  }, [exitCount, started, result, reviewMode]);
+  }, [exitCount, started, result, reviewMode, handleSubmit]);
 
   const handleStart = async () => {
     if (document.documentElement.requestFullscreen)
@@ -105,35 +134,6 @@ function Quiz() {
 
   const handlePrev = () => {
     if (currentQ > 0) setCurrentQ(currentQ - 1);
-  };
-
-  const handleSubmit = async () => {
-    if (submitting || reviewMode || result) return;
-    setSubmitting(true);
-
-    try {
-      const formattedAnswers = Object.values(answers);
-      const res = await quizAPI.submit(quiz._id, formattedAnswers);
-
-      if (document.fullscreenElement) await document.exitFullscreen();
-
-      setResult({
-        score: res.data.score,
-        correctCount: res.data.correctCount,
-        wrongCount: res.data.wrongCount,
-        total: res.data.total,
-        percentage: res.data.percentage,
-        status: res.data.status,
-        userAnswers: answers,
-      });
-
-      alert("✅ Quiz submitted successfully!");
-    } catch (err) {
-      console.error("Failed to submit quiz:", err);
-      alert(`❌ Failed to submit quiz: ${err.response?.data?.message || err.message}`);
-    } finally {
-      setSubmitting(false);
-    }
   };
 
   if (!quiz) return <p className="text-center mt-5">Loading Exam...</p>;

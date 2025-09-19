@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { resultAPI } from "../services/api";
 import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
 
 function SearchResults() {
   const [email, setEmail] = useState(localStorage.getItem("lastEmail") || "");
@@ -10,10 +9,9 @@ function SearchResults() {
   );
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(localStorage.getItem("lastMessage") || "");
-  const navigate = useNavigate();
 
   useEffect(() => {
-    // Save results & message into localStorage whenever they change
+    // Persist values into localStorage
     localStorage.setItem("lastEmail", email);
     localStorage.setItem("lastResults", JSON.stringify(results));
     localStorage.setItem("lastMessage", message);
@@ -72,7 +70,7 @@ function SearchResults() {
       {/* Loading */}
       {loading && <p className="text-center">Loading results...</p>}
 
-      {/* Message (error or no results) */}
+      {/* Message */}
       {!loading && message && (
         <div className="alert alert-warning text-center">{message}</div>
       )}

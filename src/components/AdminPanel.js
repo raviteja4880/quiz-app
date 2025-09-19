@@ -4,7 +4,6 @@ import { quizAPI } from "../services/api";
 
 function AdminPanel() {
   const navigate = useNavigate();
-  const [admin, setAdmin] = useState(null);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -23,11 +22,9 @@ function AdminPanel() {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user || user.role !== "admin") {
       navigate("/login");
-    } else {
-      setAdmin(user);
     }
     fetchQuizzes();
-  }, []);
+  }, [navigate]); // ✅ include navigate
 
   const fetchQuizzes = async () => {
     try {
