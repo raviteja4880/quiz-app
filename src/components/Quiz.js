@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { quizAPI } from "../services/api";
 
@@ -16,7 +16,8 @@ function Quiz() {
 
   const reviewMode = !!resultId;
 
-  const handleSubmit = async () => {
+  // ✅ Stable handleSubmit using useCallback
+  const handleSubmit = useCallback(async () => {
     if (submitting || reviewMode || result) return;
     setSubmitting(true);
 
@@ -39,11 +40,13 @@ function Quiz() {
       alert("✅ Quiz submitted successfully!");
     } catch (err) {
       console.error("Failed to submit quiz:", err);
-      alert(`❌ Failed to submit quiz: ${err.response?.data?.message || err.message}`);
+      alert(
+        `❌ Failed to submit quiz: ${err.response?.data?.message || err.message}`
+      );
     } finally {
       setSubmitting(false);
     }
-  };
+  }, [submitting, reviewMode, result, answers, quiz?._id]);
 
   // Fetch quiz or result
   useEffect(() => {
@@ -54,7 +57,9 @@ function Quiz() {
           const res = await quizAPI.getResultById(resultId);
           data = res.data;
           setAnswers(
-            Object.fromEntries(data.questions.map((q, i) => [i, q.userAnswer]))
+            Object.fromEntries(
+              data.questions.map((q, i) => [i, q.userAnswer])
+            )
           );
           setResult(data.result);
         } else {
@@ -65,36 +70,25 @@ function Quiz() {
         setQuiz(data);
       } catch (err) {
         console.error("Failed to load quiz", err);
-        alert("Failed to load quiz: " + (err.response?.data?.message || err.message));
+        alert(
+          "Failed to load quiz: " +
+            (err.response?.data?.message || err.message)
+        );
       }
     };
     fetchQuiz();
   }, [id, resultId, reviewMode]);
 
-// timeout
-useEffect(() => {
-  if (timeLeft === 0 && started && !result && !reviewMode) handleSubmit();
-}, [timeLeft, started, result, reviewMode, handleSubmit]);
-
-// exitCount >= 3
-useEffect(() => {
-  if (exitCount >= 3 && started && !result && !reviewMode) {
-    alert("❌ You exited fullscreen too many times. Exam ended.");
-    handleSubmit();
-  }
-}, [exitCount, started, result, reviewMode, handleSubmit]);
-
-
-  // Auto-submit on timeout 
+  // ⏳ Auto-submit on timeout
   useEffect(() => {
     if (timeLeft === 0 && started && !result && !reviewMode) handleSubmit();
   }, [timeLeft, started, result, reviewMode, handleSubmit]);
 
-  // Track fullscreen exit
+  // 🖥️ Track fullscreen exit
   useEffect(() => {
     const handleExit = () => {
       if (!document.fullscreenElement && started && !reviewMode && !result) {
-        setExitCount(prev => prev + 1);
+        setExitCount((prev) => prev + 1);
         setShowWarning(true);
       }
     };
@@ -102,7 +96,7 @@ useEffect(() => {
     return () => document.removeEventListener("fullscreenchange", handleExit);
   }, [started, reviewMode, result]);
 
-  // Auto-submit when exitCount reaches 3
+  // ❌ Auto-submit when exitCount reaches 3
   useEffect(() => {
     if (exitCount >= 3 && started && !result && !reviewMode) {
       alert("❌ You exited fullscreen too many times. Exam ended.");
@@ -164,7 +158,9 @@ useEffect(() => {
             const userAnswer = answers[index];
             return (
               <div key={index} className="mb-3">
-                <h5>Q{index + 1}: {q.question}</h5>
+                <h5>
+                  Q{index + 1}: {q.question}
+                </h5>
                 {q.options.map((option, i) => {
                   let bgClass = "";
                   if (i === q.correctAnswer) bgClass = "bg-success text-white";
@@ -198,8 +194,12 @@ useEffect(() => {
   // ---------- BEFORE START ----------
   if (!started) {
     return (
-      <div className="d-flex justify-content-center align-items-center vh-100 bg-gradient"
-        style={{ background: "linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%)" }}>
+      <div
+        className="d-flex justify-content-center align-items-center vh-100 bg-gradient"
+        style={{
+          background: "linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%)",
+        }}
+      >
         <div className="card shadow-lg p-4 text-center w-50">
           <h3 className="mb-3">{quiz.title}</h3>
           <p>{quiz.description}</p>
@@ -220,8 +220,8 @@ useEffect(() => {
     timeLeft <= 3 * 60
       ? "bg-danger"
       : timeLeft <= 5 * 60
-        ? "bg-warning"
-        : "bg-success";
+      ? "bg-warning"
+      : "bg-success";
 
   const answeredCount = Object.keys(answers).length;
 
@@ -231,14 +231,17 @@ useEffect(() => {
       style={{
         background: "linear-gradient(135deg, #9aa8e9ff 0%, #c098e9ff 100%)",
         color: "#fff",
-        overflowY: "auto"
+        overflowY: "auto",
       }}
     >
       {showWarning && (
         <div className="alert alert-danger text-center">
           ⚠️ You exited fullscreen! Click below to continue.
           <br />
-          <button className="btn btn-warning mt-2" onClick={reEnterFullscreen}>
+          <button
+            className="btn btn-warning mt-2"
+            onClick={reEnterFullscreen}
+          >
             Re-enter Fullscreen
           </button>
         </div>
@@ -246,20 +249,29 @@ useEffect(() => {
 
       {/* Exam Details + Palette */}
       <div className="d-flex justify-content-end mb-4">
-        <div className="card p-3 shadow-lg bg-white text-dark w-100" style={{ maxWidth: "600px" }}>
+        <div
+          className="card p-3 shadow-lg bg-white text-dark w-100"
+          style={{ maxWidth: "600px" }}
+        >
           <h5 className="text-center mb-2">Exam Details</h5>
           <div className="d-flex justify-content-between">
-            <p><b>Title:</b> {quiz.title}</p>
-            <p><b>Total Questions:</b> {quiz.questions.length}</p>
+            <p>
+              <b>Title:</b> {quiz.title}
+            </p>
+            <p>
+              <b>Total Questions:</b> {quiz.questions.length}
+            </p>
             <p>
               <b>⏳ Time Left:</b>{" "}
-              <span className={
-                progressColor === "bg-success"
-                  ? "text-success"
-                  : progressColor === "bg-warning"
+              <span
+                className={
+                  progressColor === "bg-success"
+                    ? "text-success"
+                    : progressColor === "bg-warning"
                     ? "text-warning"
                     : "text-danger"
-              }>
+                }
+              >
                 {minutes}:{seconds < 10 ? `0${seconds}` : seconds}
               </span>
             </p>
@@ -267,7 +279,9 @@ useEffect(() => {
 
           <div className="d-flex justify-content-between align-items-center mb-2">
             <h6 className="mb-0">Question Palette</h6>
-            <span><b>Answered:</b> {answeredCount}/{quiz.questions.length}</span>
+            <span>
+              <b>Answered:</b> {answeredCount}/{quiz.questions.length}
+            </span>
           </div>
 
           <div
@@ -275,7 +289,7 @@ useEffect(() => {
             style={{
               gridTemplateColumns: "repeat(5, 1fr)",
               display: "grid",
-              gap:"10px",
+              gap: "10px",
             }}
           >
             {quiz.questions.map((_, index) => {
