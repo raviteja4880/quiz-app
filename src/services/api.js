@@ -1,14 +1,11 @@
 import axios from "axios";
 
-// ✅ Base URL switches between local and deployed backend
 const API = axios.create({
   baseURL:
-    process.env.NODE_ENV === "production"
-      ? "https://quiz-backend-hzou.onrender.com" 
-      : "http://localhost:5000/api",            
+    process.env.REACT_APP_API_URL || "http://localhost:5000/api", 
 });
 
-// ✅ Automatically attach JWT token to all requests
+// ✅ Automatically attach JWT token
 API.interceptors.request.use((req) => {
   const token = localStorage.getItem("token");
   if (token) {
