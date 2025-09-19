@@ -71,14 +71,21 @@ function Quiz() {
     fetchQuiz();
   }, [id, resultId, reviewMode]);
 
-  // Timer
-  useEffect(() => {
-    if (!started || timeLeft <= 0 || reviewMode) return;
-    const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
-    return () => clearInterval(timer);
-  }, [started, timeLeft, reviewMode]);
+// timeout
+useEffect(() => {
+  if (timeLeft === 0 && started && !result && !reviewMode) handleSubmit();
+}, [timeLeft, started, result, reviewMode, handleSubmit]);
 
-  // Auto-submit on timeout ✅ include handleSubmit
+// exitCount >= 3
+useEffect(() => {
+  if (exitCount >= 3 && started && !result && !reviewMode) {
+    alert("❌ You exited fullscreen too many times. Exam ended.");
+    handleSubmit();
+  }
+}, [exitCount, started, result, reviewMode, handleSubmit]);
+
+
+  // Auto-submit on timeout 
   useEffect(() => {
     if (timeLeft === 0 && started && !result && !reviewMode) handleSubmit();
   }, [timeLeft, started, result, reviewMode, handleSubmit]);
@@ -95,7 +102,7 @@ function Quiz() {
     return () => document.removeEventListener("fullscreenchange", handleExit);
   }, [started, reviewMode, result]);
 
-  // Auto-submit when exitCount reaches 3 ✅ include handleSubmit
+  // Auto-submit when exitCount reaches 3
   useEffect(() => {
     if (exitCount >= 3 && started && !result && !reviewMode) {
       alert("❌ You exited fullscreen too many times. Exam ended.");
