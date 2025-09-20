@@ -10,32 +10,34 @@ function Login({ setIsLoggedIn }) {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+ const handleLogin = async (e) => {
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      const payload = { email, password };
-      if (role === "admin") payload.adminKey = adminKey;
+  try {
+    const payload = { email, password };
+    if (role === "admin") payload.adminKey = adminKey;
 
-      console.log("📩 Login payload:", payload);
+    console.log("📩 Login payload:", payload);
 
-      const { data } = await authAPI.login(payload);
+    const { data } = await authAPI.login(payload);
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      localStorage.setItem("isLoggedIn", "true");
-      if (typeof setIsLoggedIn === "function") setIsLoggedIn(true);
+    // ✅ Use sessionStorage instead of localStorage
+    sessionStorage.setItem("token", data.token);
+    sessionStorage.setItem("user", JSON.stringify(data.user));
+    sessionStorage.setItem("isLoggedIn", "true");
 
-      navigate(data.user.role === "admin" ? "/admin" : "/home");
-      console.log("✅ Login success:", data);
-    } catch (err) {
-      console.error("❌ Login error:", err.response?.data || err.message);
-      alert("Login failed: " + (err.response?.data?.message || err.message));
-    } finally {
-      setLoading(false);
-    }
-  };
+    if (typeof setIsLoggedIn === "function") setIsLoggedIn(true);
+
+    navigate(data.user.role === "admin" ? "/admin" : "/home");
+    console.log("✅ Login success:", data);
+  } catch (err) {
+    console.error("❌ Login error:", err.response?.data || err.message);
+    alert("Login failed: " + (err.response?.data?.message || err.message));
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div
