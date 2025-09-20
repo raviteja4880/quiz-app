@@ -183,8 +183,8 @@ function Quiz() {
         </div>
 
         <div className="text-center">
-          <Link to="/quizlist" className="btn btn-primary btn-lg">
-            ⬅ Back to quizlist
+          <Link to="/myresults" className="btn btn-primary btn-lg">
+            My Results
           </Link>
         </div>
       </div>
