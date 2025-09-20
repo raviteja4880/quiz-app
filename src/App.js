@@ -23,9 +23,24 @@ function AppWrapper() {
     () => localStorage.getItem("isLoggedIn") === "true"
   );
 
+  // Keep localStorage in sync with state
   useEffect(() => {
     localStorage.setItem("isLoggedIn", isLoggedIn);
   }, [isLoggedIn]);
+
+  // Clear storage on tab/window close
+  useEffect(() => {
+    if (typeof window === "undefined") return; // SSR safe
+
+    const handleUnload = () => {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("isLoggedIn");
+    };
+
+    window.addEventListener("beforeunload", handleUnload);
+    return () => window.removeEventListener("beforeunload", handleUnload);
+  }, []);
 
   return <App isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />;
 }
