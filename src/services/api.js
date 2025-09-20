@@ -1,13 +1,12 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL:
-    process.env.REACT_APP_API_URL || "http://localhost:5000/api", 
+  baseURL: process.env.REACT_APP_API_URL || "http://localhost:5000/api",
 });
 
-// ✅ Automatically attach JWT token
+// Automatically attach JWT token
 API.interceptors.request.use((req) => {
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
   if (token) {
     req.headers = req.headers || {};
     req.headers.Authorization = `Bearer ${token}`;
@@ -15,13 +14,13 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
-// ✅ Auth API
+// Auth API
 export const authAPI = {
   login: (payload) => API.post("/auth/login", payload),
   signup: (payload) => API.post("/auth/signup", payload),
 };
 
-// ✅ Quiz API
+// Quiz API
 export const quizAPI = {
   getAll: () => API.get("/quiz"),
   getById: (id) => API.get(`/quiz/${id}`),
@@ -33,7 +32,7 @@ export const quizAPI = {
   getResultById: (resultId) => API.get(`/quiz/results/${resultId}`),
 };
 
-// ✅ Result API
+// Result API
 export const resultAPI = {
   getMine: () => API.get("/quiz/myresults"),
   getByEmail: (email) => API.get(`/quiz/results/user/${email}`),
