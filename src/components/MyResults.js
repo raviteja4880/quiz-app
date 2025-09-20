@@ -60,11 +60,13 @@ function MyResults() {
                   <td>
                     <span
                       className={`badge ${
-                        r.status.toLowerCase() === "passed"
-                          ? "bg-success"
-                          : "bg-danger"
-                      }`}
-                    >
+                        r.status.toLowerCase() === "pass"
+                        ? "bg-success"
+                        : r.status.toLowerCase() === "fail"
+                        ? "bg-danger"
+                        : "bg-secondary"
+                         }`}
+                        >
                       {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
                     </span>
                   </td>
