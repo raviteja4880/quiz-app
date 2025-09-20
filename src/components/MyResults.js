@@ -22,53 +22,63 @@ function MyResults() {
 
   return (
     <div
-      className="vh-100 vw-100 d-flex flex-column"
+      className="vh-100 vw-100 p-4"
       style={{
         background: "linear-gradient(135deg, #c7f253ff 0%, #3eeb9dff 100%)",
-        color: "white",
-        padding: "40px",
+        color: "#fff",
         overflowY: "auto",
       }}
     >
       <h2 className="text-center mb-4">My Quiz Results</h2>
 
       {loading ? (
-        <p className="text-center">Loading results...</p>
+        <div className="text-center my-5">
+          <div className="spinner-border text-light" role="status"></div>
+        </div>
       ) : results.length === 0 ? (
         <p className="text-center">You haven’t taken any quizzes yet.</p>
       ) : (
-        <div className="table-responsive">
-          <table className="table table-bordered table-hover text-center bg-white text-dark">
-            <thead className="table-dark">
-              <tr>
-                <th>Quiz</th>
-                <th>Score</th>
-                <th>Percentage</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {results.map((r) => (
-                <tr key={r.resultId}>
-                  <td>{r.quizTitle}</td>
-                  <td>
-                    {r.score} / {r.total}
-                  </td>
-                  <td>{r.percentage.toFixed(2)}%</td>
-                  <td>{r.status}</td>
-                  <td>
-                    <Link
-                      to={`/quiz/${r.quizId}/review/${r.resultId}`}
-                      className="btn btn-primary btn-sm"
-                    >
-                      Review
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="d-flex flex-wrap justify-content-center gap-4">
+          {results.map((r) => (
+            <div
+              key={r.resultId}
+              className="card text-dark"
+              style={{
+                width: "280px",
+                background: "#fff",
+                borderRadius: "12px",
+                boxShadow: "0 4px 10px rgba(0,0,0,0.15)",
+              }}
+            >
+              <div className="card-body d-flex flex-column">
+                <h5 className="card-title">{r.quizTitle}</h5>
+
+                <p className="mb-1">
+                  <strong>Score:</strong> {r.score} / {r.total}
+                </p>
+                <p className="mb-1">
+                  <strong>Percentage:</strong> {Number(r.percentage).toFixed(2)}%
+                </p>
+                <p className="mb-3">
+                  <strong>Status:</strong>{" "}
+                  <span
+                    className={`badge ${
+                      r.status.toLowerCase() === "passed" ? "bg-success" : "bg-danger"
+                    }`}
+                  >
+                    {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
+                  </span>
+                </p>
+
+                <Link
+                  to={`/quiz/${r.quizId}/review/${r.resultId}`}
+                  className="btn btn-primary mt-auto"
+                >
+                  Review
+                </Link>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
