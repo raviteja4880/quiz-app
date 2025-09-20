@@ -29,7 +29,7 @@ function Result() {
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-bold mb-3">✅ Quiz Review</h2>
+      <h2 className="text-xl font-bold mb-3">Quiz Review</h2>
       <h3 className="mb-3">{title}</h3>
 
       <p className="mb-2">
@@ -41,32 +41,41 @@ function Result() {
       </p>
 
       {questions.map((q, idx) => (
-        <div key={idx} className="mb-4 p-3 border rounded bg-white">
-          <p className="fw-bold">
+        <div key={idx} className="mb-4 p-3 border rounded bg-white shadow-sm">
+          <p className="fw-bold mb-2">
             Q{idx + 1}: {q.question}
           </p>
 
           <ul style={{ listStyleType: "none", paddingLeft: 0 }}>
             {q.options.map((opt, j) => {
-              const isCorrect = j === q.correctAnswer;
-              const isUserAnswer = j === q.userAnswer;
+              const correctIndex = Number(q.correctAnswer);
+              const userIndex = Number(q.userAnswer);
 
-              let optionClass = "p-2 mt-1 rounded";
+              const isCorrect = j === correctIndex;
+              const isUserAnswer = j === userIndex;
+
+              let optionClass =
+                "p-2 mt-1 rounded border d-flex align-items-center justify-content-between";
               let icon = "";
 
-              if (isCorrect) {
-                optionClass += " bg-success text-white"; // ✅ Correct option
-                icon = "✔";
-              } else if (isUserAnswer && !isCorrect) {
-                optionClass += " bg-danger text-white"; // ❌ Wrong user choice
-                icon = "❌";
+              if (isCorrect && isUserAnswer) {
+                optionClass +=
+                  " bg-success text-white border-success fw-bold shadow-sm";
+                icon = "✔"; // Correct and selected
+              } else if (isCorrect) {
+                optionClass += " bg-success text-white border-success fw-bold";
+                icon = "✔"; // Correct answer
+              } else if (isUserAnswer) {
+                optionClass += " bg-danger text-white border-danger fw-bold";
+                icon = "❌"; // Wrong selected
               } else {
-                optionClass += " bg-light"; // Neutral
+                optionClass += " bg-light border-light"; // Neutral
               }
 
               return (
                 <li key={j} className={optionClass}>
-                  {opt} {icon && <b className="ms-2">{icon}</b>}
+                  <span>{opt}</span>
+                  {icon && <b>{icon}</b>}
                 </li>
               );
             })}
@@ -78,7 +87,7 @@ function Result() {
         className="btn btn-primary mt-3"
         onClick={() => navigate("/myresults")}
       >
-        ⬅ Back to My Results
+        Back to My Results
       </button>
     </div>
   );
