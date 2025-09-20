@@ -20,12 +20,11 @@ const ProtectedRoute = ({ isLoggedIn, children }) =>
 
 function AppWrapper() {
   const [isLoggedIn, setIsLoggedIn] = useState(
-    () => localStorage.getItem("isLoggedIn") === "true"
+    () => sessionStorage.getItem("isLoggedIn") === "true"
   );
 
-  // ✅ Sync React state with localStorage
   useEffect(() => {
-    localStorage.setItem("isLoggedIn", isLoggedIn);
+    sessionStorage.setItem("isLoggedIn", isLoggedIn);
   }, [isLoggedIn]);
 
   return <App isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />;
