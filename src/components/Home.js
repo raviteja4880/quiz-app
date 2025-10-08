@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { SiGmail } from "react-icons/si";
 import {
   FaChalkboardTeacher,
@@ -15,9 +15,28 @@ function Home() {
     return JSON.parse(localStorage.getItem("user")) || {};
   });
 
+  const [showAbout, setShowAbout] = useState(false);
+  const [showContact, setShowContact] = useState(false);
+
+  const aboutRef = useRef();
+  const contactRef = useRef();
+
   useEffect(() => {
     const savedUser = JSON.parse(localStorage.getItem("user")) || {};
     setUser(savedUser);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (aboutRef.current && !aboutRef.current.contains(e.target)) {
+        setShowAbout(false);
+      }
+      if (contactRef.current && !contactRef.current.contains(e.target)) {
+        setShowContact(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const features = [
@@ -41,14 +60,17 @@ function Home() {
 
   return (
     <div
-      className="min-vh-100 d-flex flex-column"
       style={{
-        background: "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)",
+        background: "linear-gradient(135deg, #ffd6b8 0%, #ffbfa0 100%)",
         color: "#333",
+        overflowX: "hidden",
       }}
     >
-      {/* 🔹 Hero Section */}
-      <div className="flex-grow-1 d-flex align-items-center justify-content-center text-center">
+      {/* 🔹 Fullscreen Hero Section */}
+      <section
+        className="d-flex flex-column justify-content-center align-items-center text-center"
+        style={{ minHeight: "100vh" }}
+      >
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
@@ -94,9 +116,10 @@ function Home() {
                       style={{
                         background: "rgba(255, 255, 255, 0.3)",
                         backdropFilter: "blur(8px)",
+                        boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
                       }}
                     >
-                      <div className="mb-3" aria-hidden="true">{f.icon}</div>
+                      <div className="mb-3">{f.icon}</div>
                       <h5 className="fw-bold">{f.title}</h5>
                       <p className="text-muted">{f.desc}</p>
                     </motion.div>
@@ -121,43 +144,193 @@ function Home() {
             </Link>
           </motion.div>
         </motion.div>
-      </div>
+      </section>
 
-      {/* 🔹 Footer */}
-      <footer className="text-dark text-center py-3 mt-auto">
-        <p className="mb-1">
-          © {new Date().getFullYear()} QuizApp. All rights reserved.
-        </p>
-        <div className="d-flex justify-content-center gap-3">
-          <a
-            href="https://github.com/raviteja4880"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="GitHub"
-            className="text-dark"
+      {/* 🔹 Footer Section */}
+      <footer
+        className="text-dark py-5"
+        style={{
+          background: "linear-gradient(135deg, #ffd6b8 0%, #ffbfa0 100%)",
+        }}
+      >
+        <div className="container text-center">
+          <h5 className="fw-bold mb-2">QuizApp</h5>
+          <p className="mb-4 text-muted">
+            Interactive quizzes to test knowledge, track progress, and improve
+            skills.
+          </p>
+
+          {/* Social Links */}
+          <div className="d-flex justify-content-center gap-3 mb-4">
+            <a
+              href="https://github.com/raviteja4880"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-dark"
+            >
+              <FaGithub size={24} />
+            </a>
+            <a
+              href="https://www.linkedin.com/in/RaviTejaKandula"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-dark"
+            >
+              <FaLinkedin size={24} />
+            </a>
+            <a
+              href="mailto:ravitejakandul@gmail.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-dark"
+            >
+              <SiGmail size={24} />
+            </a>
+          </div>
+
+          {/* Footer Links */}
+          <div
+            className="d-flex justify-content-center align-items-center gap-4 flex-wrap"
+            style={{ marginTop: "1rem" }}
           >
-            <FaGithub size={20} />
-          </a>
-          <a
-            href="https://www.linkedin.com/in/ravi-teja-kandula-5a41ab2a0"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="LinkedIn"
-            className="text-dark"
-          >
-            <FaLinkedin size={20} />
-          </a>
-          <a
-            href="mailto:ravitejakandul@gmail.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Email"
-            className="text-dark"
-          >
-            <SiGmail size={20} />
-          </a>
+            <button
+              className="btn btn-link text-dark fw-semibold text-decoration-none p-0"
+              onClick={() => {
+                setShowAbout(true);
+                setShowContact(false);
+              }}
+            >
+              About
+            </button>
+            <button
+              className="btn btn-link text-dark fw-semibold text-decoration-none p-0"
+              onClick={() => {
+                setShowContact(true);
+                setShowAbout(false);
+              }}
+            >
+              Contact
+            </button>
+          </div>
+
+          <p className="text-muted mt-4 mb-0 small">
+            © {new Date().getFullYear()} QuizApp. All rights reserved.
+          </p>
         </div>
       </footer>
+
+      {/* 🔹 Overlay Modals */}
+      <AnimatePresence>
+        {(showAbout || showContact) && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.6)",
+              backdropFilter: "blur(6px)",
+              zIndex: 2000,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            {showAbout && (
+              <motion.div
+                ref={aboutRef}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.4 }}
+                className="p-4 rounded-4 text-start"
+                style={{
+                  background: "rgba(255,255,255,0.95)",
+                  maxWidth: "480px",
+                  width: "90%",
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
+                }}
+              >
+                <h4 className="fw-bold mb-3 text-center">About QuizApp</h4>
+                <p className="text-muted small">
+                  QuizApp is an interactive platform designed to make learning
+                  fun and engaging. Whether you're a student or a professional,
+                  test your skills with expert-curated quizzes.
+                </p>
+                <ul className="text-muted small mb-3">
+                  <li>📌 Roles: User & Admin</li>
+                  <li>📊 Features: Quizzes, Results, Performance Tracking</li>
+                  <li>⚡ Tech: React, Node.js, MongoDB</li>
+                  <li>👨‍💻 Developer: Ravi Teja Kandula</li>
+                </ul>
+                <button
+                  className="btn btn-dark w-100"
+                  onClick={() => setShowAbout(false)}
+                >
+                  Close
+                </button>
+              </motion.div>
+            )}
+
+            {showContact && (
+              <motion.div
+                ref={contactRef}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.4 }}
+                className="p-4 rounded-4"
+                style={{
+                  background: "rgba(255,255,255,0.95)",
+                  maxWidth: "500px",
+                  width: "90%",
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
+                }}
+              >
+                <h4 className="fw-bold mb-3 text-center">Contact Me</h4>
+                <form
+                  id="contact-form"
+                  action="https://formspree.io/f/mwpnevjj"
+                  method="POST"
+                >
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="Your Name 📛"
+                    required
+                    className="form-control mb-2"
+                  />
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Your Email 📩"
+                    required
+                    className="form-control mb-2"
+                  />
+                  <textarea
+                    name="message"
+                    rows="4"
+                    placeholder="Your Message 🗨️"
+                    required
+                    className="form-control mb-2"
+                  ></textarea>
+                  <button type="submit" className="btn btn-dark w-100">
+                    Send
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary w-100 mt-2"
+                    onClick={() => setShowContact(false)}
+                  >
+                    Cancel
+                  </button>
+                </form>
+              </motion.div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
