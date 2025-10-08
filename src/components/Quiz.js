@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { quizAPI } from "../services/api";
 
@@ -49,33 +49,32 @@ function Quiz() {
     return () => clearInterval(timer);
   }, [started, timeLeft, reviewMode]);
 
-  useEffect(() => {
-    if (timeLeft === 0 && started && !result && !reviewMode) handleSubmit();
-  }, [timeLeft, started, result, reviewMode]);
-
-  // ===================== Fullscreen Exit Tracking =====================
-  useEffect(() => {
-    const handleExit = () => {
-      if (!document.fullscreenElement && started && !reviewMode && !result) {
-        setExitCount((prev) => prev + 1);
-        setShowWarning(true);
-      }
-    };
-
-    document.addEventListener("fullscreenchange", handleExit);
-    return () => document.removeEventListener("fullscreenchange", handleExit);
-  }, [started, reviewMode, result]);
-
-  // ✅ Prevent multiple submits after 3 exits
-  useEffect(() => {
-    if (exitCount >= 3 && started && !result && !reviewMode && !exitLocked) {
-      setExitLocked(true);
-      alert("❌ You exited fullscreen too many times. Exam ended.");
-      handleSubmit();
-    }
-  }, [exitCount, started, result, reviewMode, exitLocked]);
-
   // ===================== Handlers =====================
+  const handleSubmit = useCallback(async () => {
+    if (submitting || reviewMode || result) return;
+    setSubmitting(true);
+    try {
+      const res = await quizAPI.submit(quiz._id, answers);
+      if (document.fullscreenElement) await document.exitFullscreen();
+
+      setResult({
+        score: res.data.score,
+        correctCount: res.data.correctCount,
+        wrongCount: res.data.wrongCount,
+        total: res.data.total,
+        percentage: res.data.percentage,
+        status: res.data.status,
+        userAnswers: answers,
+      });
+
+      alert("✅ Quiz submitted successfully!");
+    } catch (err) {
+      alert(`❌ Failed to submit quiz: ${err.response?.data?.message || err.message}`);
+    } finally {
+      setSubmitting(false);
+    }
+  }, [submitting, reviewMode, result, quiz?._id, answers]);
+
   const handleStart = async () => {
     if (document.documentElement.requestFullscreen)
       await document.documentElement.requestFullscreen();
@@ -112,30 +111,31 @@ function Quiz() {
     if (currentQ > 0) setCurrentQ(currentQ - 1);
   };
 
-  const handleSubmit = async () => {
-    if (submitting || reviewMode || result) return;
-    setSubmitting(true);
-    try {
-      const res = await quizAPI.submit(quiz._id, answers);
-      if (document.fullscreenElement) await document.exitFullscreen();
+  // ===================== Effects using handleSubmit =====================
+  useEffect(() => {
+    if (timeLeft === 0 && started && !result && !reviewMode) handleSubmit();
+  }, [timeLeft, started, result, reviewMode, handleSubmit]);
 
-      setResult({
-        score: res.data.score,
-        correctCount: res.data.correctCount,
-        wrongCount: res.data.wrongCount,
-        total: res.data.total,
-        percentage: res.data.percentage,
-        status: res.data.status,
-        userAnswers: answers,
-      });
-
-      alert("✅ Quiz submitted successfully!");
-    } catch (err) {
-      alert(`❌ Failed to submit quiz: ${err.response?.data?.message || err.message}`);
-    } finally {
-      setSubmitting(false);
+  useEffect(() => {
+    if (exitCount >= 3 && started && !result && !reviewMode && !exitLocked) {
+      setExitLocked(true);
+      alert("❌ You exited fullscreen too many times. Exam ended.");
+      handleSubmit();
     }
-  };
+  }, [exitCount, started, result, reviewMode, exitLocked, handleSubmit]);
+
+  // ===================== Fullscreen Exit Tracking =====================
+  useEffect(() => {
+    const handleExit = () => {
+      if (!document.fullscreenElement && started && !reviewMode && !result) {
+        setExitCount((prev) => prev + 1);
+        setShowWarning(true);
+      }
+    };
+
+    document.addEventListener("fullscreenchange", handleExit);
+    return () => document.removeEventListener("fullscreenchange", handleExit);
+  }, [started, reviewMode, result]);
 
   // ===================== UI =====================
   if (!quiz) return <p className="text-center mt-5">Loading Exam...</p>;
@@ -199,7 +199,7 @@ function Quiz() {
           <h3 className="text-center mb-3">{quiz.title}</h3>
           <p>{quiz.description}</p>
 
-          {/* ✅ Instructions */}
+          {/* Instructions */}
           <ul className="mb-4" style={{ listStyleType: "disc", paddingLeft: "1.5rem" }}>
             <li>Read all questions carefully before answering.</li>
             <li>You must stay in fullscreen mode during the exam.</li>
@@ -209,42 +209,15 @@ function Quiz() {
               Question Palette Legend:
               <ul className="mt-2" style={{ listStyle: "none", paddingLeft: "0" }}>
                 <li className="d-flex align-items-center mb-1">
-                  <span
-                    style={{
-                      display: "inline-block",
-                      width: "20px",
-                      height: "20px",
-                      backgroundColor: "#6c757d", // gray
-                      marginRight: "8px",
-                      borderRadius: "4px",
-                    }}
-                  ></span>
+                  <span style={{ display: "inline-block", width: "20px", height: "20px", backgroundColor: "#6c757d", marginRight: "8px", borderRadius: "4px" }}></span>
                   Not Visited
                 </li>
                 <li className="d-flex align-items-center mb-1">
-                  <span
-                    style={{
-                      display: "inline-block",
-                      width: "20px",
-                      height: "20px",
-                      backgroundColor: "#dc3545", // red
-                      marginRight: "8px",
-                      borderRadius: "4px",
-                    }}
-                  ></span>
+                  <span style={{ display: "inline-block", width: "20px", height: "20px", backgroundColor: "#dc3545", marginRight: "8px", borderRadius: "4px" }}></span>
                   Currently Viewing
                 </li>
                 <li className="d-flex align-items-center mb-1">
-                  <span
-                    style={{
-                      display: "inline-block",
-                      width: "20px",
-                      height: "20px",
-                      backgroundColor: "#28a745", // green
-                      marginRight: "8px",
-                      borderRadius: "4px",
-                    }}
-                  ></span>
+                  <span style={{ display: "inline-block", width: "20px", height: "20px", backgroundColor: "#28a745", marginRight: "8px", borderRadius: "4px" }}></span>
                   Answered
                 </li>
               </ul>
@@ -277,7 +250,7 @@ function Quiz() {
 
   return (
     <div className="vh-100 vw-100 p-3 d-flex" style={{ background: "linear-gradient(135deg, #6a85b6 0%, #bac8e0 100%)" }}>
-      {/* Manual fullscreen warning */}
+      {/* Fullscreen warning */}
       {showWarning && exitCount < 3 && (
         <div className="position-fixed top-0 start-50 translate-middle-x mt-3 alert alert-warning shadow" style={{ zIndex: 9999 }}>
           ⚠ Fullscreen exited — Please re-enter to start{" "}
