@@ -4,8 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 function NavBar({ isLoggedIn, setIsLoggedIn }) {
   const navigate = useNavigate();
   const [user, setUser] = useState(() => JSON.parse(localStorage.getItem("user")));
-  const [showDropdown, setShowDropdown] = useState(false);
-  const dropdownRef = useRef();
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const profileDropdownRef = useRef();
 
   // Sync user from localStorage
   useEffect(() => {
@@ -16,15 +16,17 @@ function NavBar({ isLoggedIn, setIsLoggedIn }) {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-  // Close dropdown outside click or Esc
+  // Close dropdown on outside click or ESC
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowDropdown(false);
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+        setShowProfileDropdown(false);
       }
     };
     const handleEsc = (event) => {
-      if (event.key === "Escape") setShowDropdown(false);
+      if (event.key === "Escape") {
+        setShowProfileDropdown(false);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("keydown", handleEsc);
@@ -39,7 +41,7 @@ function NavBar({ isLoggedIn, setIsLoggedIn }) {
     localStorage.removeItem("user");
     localStorage.removeItem("isLoggedIn");
     setIsLoggedIn(false);
-    setShowDropdown(false);
+    setShowProfileDropdown(false);
     navigate("/");
   };
 
@@ -49,10 +51,14 @@ function NavBar({ isLoggedIn, setIsLoggedIn }) {
     <nav
       className="navbar navbar-expand-lg px-4 shadow-sm"
       style={{
-        background: "linear-gradient(90deg, #9f64ddff 0%, #5d8fe7ff 100%)",
+        background: "#fff",
+        borderBottom: "1px solid #eaeaea",
+        position: "sticky", // 👈 Keeps navbar visible while scrolling
+        top: 0,
+        zIndex: 1050, // ensures it stays above other content
       }}
     >
-      <Link className="navbar-brand fw-bold text-white fs-4" to="/home">
+      <Link className="navbar-brand fw-bold fs-4 text-dark" to="/home">
         Quiz App
       </Link>
 
@@ -82,73 +88,61 @@ function NavBar({ isLoggedIn, setIsLoggedIn }) {
         )}
 
         {/* Profile Dropdown */}
-        <div className="position-relative" ref={dropdownRef}>
+        <div className="position-relative" ref={profileDropdownRef}>
           <button
-            className="profile-circle text-white d-flex align-items-center justify-content-center"
-            onClick={() => setShowDropdown((prev) => !prev)}
-            aria-label="Profile Menu"
+            className="profile-btn d-flex align-items-center"
+            onClick={() => setShowProfileDropdown((prev) => !prev)}
           >
-            <i className="bi bi-person fs-5" aria-hidden="true"></i>
+            <div className="avatar-circle me-2">
+              {user?.name?.charAt(0).toUpperCase()}
+            </div>
+            <span className="fw-semibold text-dark">{user?.name}</span>
           </button>
 
-          {showDropdown && (
+          {showProfileDropdown && (
             <div
-              className="dropdown-card shadow-lg"
+              className="dropdown-card"
               style={{
                 position: "absolute",
                 top: "120%",
                 right: 0,
-                width: "270px",
-                zIndex: 1000,
-                borderRadius: "14px",
+                width: "260px",
+                zIndex: 2000,
+                borderRadius: "10px",
+                background: "#fff",
+                boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
                 overflow: "hidden",
-                background: "linear-gradient(135deg, #6a11cb, #2575fc)",
-                color: "white",
-                transition: "opacity 0.3s ease",
               }}
             >
               {/* Profile Section */}
-              <div className="text-center p-4">
-                <div
-                  className="mx-auto mb-3"
-                  style={{
-                    width: "70px",
-                    height: "70px",
-                    borderRadius: "50%",
-                    background: "rgba(255,255,255,0.2)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#fff",
-                    fontSize: "26px",
-                    fontWeight: "bold",
-                  }}
-                >
+              <div className="d-flex align-items-center px-3 py-3 border-bottom">
+                <div className="avatar-circle me-2">
                   {user?.name?.charAt(0).toUpperCase()}
                 </div>
-                <h6 className="mb-1">{user?.name}</h6>
-                <small className="d-block">{user?.email}</small>
-                <small
-                  className="d-block mt-1"
-                  style={{ fontStyle: "italic", opacity: 0.9 }}
-                >
-                  Role: {user?.role}
-                </small>
+                <div>
+                  <div className="fw-semibold">{user?.name}</div>
+                  <small className="text-muted">{user?.email}</small>
+                </div>
               </div>
 
-              {/* Logout Button */}
-              <div className="px-4 pb-4">
-                <button
-                  className="btn w-100"
+              {/* Menu Items */}
+              <div className="d-flex flex-column">
+                <div
+                  className="dropdown-role px-3 py-2"
                   style={{
-                    background: "#ff4b5c",
-                    color: "white",
-                    borderRadius: "8px",
-                    fontWeight: "500",
+                    fontSize: "14px",
+                    color: "#555",
+                    display: "flex",
+                    alignItems: "center",
                   }}
+                >
+                  <i className="bi bi-shield-lock me-2"></i> Role: {user?.role}
+                </div>
+                <button
+                  className="dropdown-item-btn text-danger fw-semibold"
                   onClick={handleLogout}
                 >
-                  Logout
+                  <i className="bi bi-box-arrow-right me-2 text-danger"></i> Logout
                 </button>
               </div>
             </div>
@@ -159,8 +153,8 @@ function NavBar({ isLoggedIn, setIsLoggedIn }) {
       {/* Custom Styling */}
       <style>{`
         .nav-btn {
-          background: rgba(255,255,255,0.9);
-          color: #2575fc;
+          background: #f5f5f5;
+          color: #333;
           border: none;
           border-radius: 50px;
           font-weight: 500;
@@ -168,21 +162,46 @@ function NavBar({ isLoggedIn, setIsLoggedIn }) {
           transition: all 0.3s ease;
         }
         .nav-btn:hover {
-          background: #fff;
-          color: #6a11cb;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+          background: #eaeaea;
+          color: #000;
         }
-        .profile-circle {
-          width: 42px;
-          height: 42px;
-          border-radius: 50%;
-          background: rgba(255,255,255,0.3);
-          cursor: pointer;
-          transition: background 0.3s ease;
+        .profile-btn {
           border: none;
+          background: none;
+          cursor: pointer;
+          padding: 6px 10px;
+          border-radius: 8px;
+          transition: background 0.2s ease;
         }
-        .profile-circle:hover {
-          background: rgba(255,255,255,0.6);
+        .profile-btn:hover {
+          background: #f5f5f5;
+        }
+        .avatar-circle {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background: #e0e0e0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 600;
+          font-size: 15px;
+          color: #333;
+        }
+        .dropdown-item-btn {
+          background: none;
+          border: none;
+          text-align: left;
+          padding: 10px 16px;
+          font-size: 14px;
+          color: #333;
+          display: flex;
+          align-items: center;
+          cursor: pointer;
+          transition: background 0.2s ease;
+        }
+        .dropdown-item-btn:hover {
+          background: #f5f5f5;
         }
       `}</style>
     </nav>
