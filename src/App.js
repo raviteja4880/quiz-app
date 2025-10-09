@@ -13,34 +13,34 @@ import MyResults from "./components/MyResults";
 import NavBar from "./components/NavBar";
 import SearchResults from "./components/SearchResults";
 import EditQuiz from "./components/EditQuiz";
+import Loader from "./components/Loader"; 
 
 // ProtectedRoute wrapper
 const ProtectedRoute = ({ isLoggedIn, children }) =>
   isLoggedIn ? children : <Navigate to="/" replace />;
 
 function AppWrapper() {
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    () => localStorage.getItem("isLoggedIn") === "true"
-  );
+  const [isLoggedIn, setIsLoggedIn] = useState(null);
+  const [loading, setLoading] = useState(true); 
+
+  useEffect(() => {
+    // Simulate checking login from localStorage
+    const loggedIn = localStorage.getItem("isLoggedIn") === "true";
+    setIsLoggedIn(loggedIn);
+    setLoading(false);
+  }, []);
 
   // Keep localStorage in sync with state
   useEffect(() => {
-    localStorage.setItem("isLoggedIn", isLoggedIn);
+    if (isLoggedIn !== null) {
+      localStorage.setItem("isLoggedIn", isLoggedIn);
+    }
   }, [isLoggedIn]);
 
-  // Clear storage on tab/window close
-  useEffect(() => {
-    if (typeof window === "undefined") return; // SSR safe
-
-    const handleUnload = () => {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      localStorage.removeItem("isLoggedIn");
-    };
-
-    window.addEventListener("beforeunload", handleUnload);
-    return () => window.removeEventListener("beforeunload", handleUnload);
-  }, []);
+  // ✅ Show loader until login state is known
+  if (loading) {
+    return <Loader />;
+  }
 
   return <App isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />;
 }
