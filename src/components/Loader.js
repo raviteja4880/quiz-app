@@ -2,8 +2,14 @@ import React from "react";
 
 export default function Loader() {
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-50">
-      <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
+    <div
+      className="d-flex justify-content-center align-items-center vh-100 bg-light"
+      style={{ flexDirection: "column" }}
+    >
+      <div className="spinner-border text-primary" role="status" style={{ width: "3rem", height: "3rem" }}>
+        <span className="visually-hidden">Loading...</span>
+      </div>
+      <p className="mt-3 text-secondary">Please wait...</p>
     </div>
   );
 }
