@@ -150,7 +150,7 @@ function Home() {
       <footer
         className="text-dark py-5"
         style={{
-          background: "linear-gradient(135deg, #ffd6b8 0%, #ffbfa0 100%)",
+          background: "linear-gradient(135deg, #fbb583ff 0%, #bb8c75ff 100%)",
         }}
       >
         <div className="container text-center">
