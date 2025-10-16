@@ -5,7 +5,7 @@ import { authAPI } from "../services/api";
 import { FaBullseye, FaChartBar, FaUserShield, FaClock } from "react-icons/fa";
 
 function LandingPage({ setIsLoggedIn }) {
-  const [isFlipped, setIsFlipped] = useState(false);
+  const [isFlipped, setIsFlipped] = useState(false); // Default to login
   const [role, setRole] = useState("user");
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -67,7 +67,7 @@ function LandingPage({ setIsLoggedIn }) {
       const { data } = await authAPI.signup(payload);
       alert(data.message || "Signup successful! Please login.");
       setFormData({ name: "", email: "", password: "", adminKey: "" });
-      if (!isMobile) setIsFlipped(false);
+      if (!isMobile) setIsFlipped(false); // After signup, show login
     } catch (err) {
       alert("Signup failed: " + (err.response?.data?.message || err.message));
     } finally {
@@ -75,11 +75,11 @@ function LandingPage({ setIsLoggedIn }) {
     }
   };
 
+  // Flip to signup when clicking Get Started
   const handleGetStarted = () => {
+    setIsFlipped(true);
     if (isMobile && signupRef.current) {
       signupRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-    } else {
-      setIsFlipped(true);
     }
   };
 
@@ -120,19 +120,12 @@ function LandingPage({ setIsLoggedIn }) {
           >
             <h5 className="fw-semibold mb-3">✨ Key Features</h5>
             <ul className="text-light list-unstyled fs-6 fs-md-5">
-              {[{
-                icon: <FaBullseye className="text-warning" />,
-                text: "Interactive quizzes with instant feedback"
-              }, {
-                icon: <FaChartBar className="text-warning" />,
-                text: "Track your progress and scores"
-              }, {
-                icon: <FaUserShield className="text-warning" />,
-                text: "Role-based access for Admins & Students"
-              }, {
-                icon: <FaClock className="text-warning" />,
-                text: "Timed challenges and topic-wise quizzes"
-              }].map((item, idx) => (
+              {[
+                { icon: <FaBullseye className="text-warning" />, text: "Interactive quizzes with instant feedback" },
+                { icon: <FaChartBar className="text-warning" />, text: "Track your progress and scores" },
+                { icon: <FaUserShield className="text-warning" />, text: "Role-based access for Admins & Students" },
+                { icon: <FaClock className="text-warning" />, text: "Timed challenges and topic-wise quizzes" },
+              ].map((item, idx) => (
                 <li
                   key={idx}
                   className="mb-2 d-flex align-items-center gap-2 flex-wrap justify-content-center justify-content-lg-start"

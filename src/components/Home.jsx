@@ -69,7 +69,7 @@ function Home() {
       {/* 🔹 Fullscreen Hero Section */}
       <section
         className="d-flex flex-column justify-content-center align-items-center text-center px-3"
-        style={{ minHeight: "100vh" }}
+        style={{ minHeight: "100vh", paddingBottom: "3rem" }} // added extra bottom padding for spacing before footer
       >
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -78,6 +78,7 @@ function Home() {
           className="w-100"
           style={{ maxWidth: "960px" }}
         >
+          {/* Hero Title */}
           <motion.h1
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -87,6 +88,7 @@ function Home() {
             🎓 Welcome {user?.name ? user.name : "Guest"}!
           </motion.h1>
 
+          {/* Hero Subtitle */}
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -135,11 +137,12 @@ function Home() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 1.2 }}
-            className="d-flex justify-content-center gap-3 flex-wrap"
+            className="d-flex justify-content-center gap-3 flex-wrap mb-5" // added mb-5 for spacing from footer
           >
             <Link
               to="/quizlist"
               className="btn btn-dark btn-lg px-5 py-3 shadow-sm rounded-pill"
+              style={{ minWidth: "220px" }} // ensures proper alignment on mobile
             >
               View All Quizzes
             </Link>
@@ -154,7 +157,7 @@ function Home() {
           background: "linear-gradient(135deg, #fbb583ff 0%, #bb8c75ff 100%)",
         }}
       >
-        <div className="container text-center">
+        <div className="container text-center pt-4"> {/* Added pt-4 for spacing above footer content */}
           <h5 className="fw-bold mb-2">QuizApp</h5>
           <p className="mb-4 text-muted">
             Interactive quizzes to test knowledge, track progress, and improve
