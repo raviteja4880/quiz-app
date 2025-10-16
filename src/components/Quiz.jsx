@@ -158,7 +158,8 @@ function Quiz() {
             Score: {result.score} / {result.total}
           </h4>
           <p className="text-center mb-4">
-            ✔ Correct: {result.correctCount} | ❌ Wrong: {result.wrongCount} | ⚪ Not Answered: {quiz.questions.length - (result.correctCount + result.wrongCount)}
+            ✔ Correct: {result.correctCount} | ❌ Wrong: {result.wrongCount} | ⚪ Not Answered:{" "}
+            {quiz.questions.length - (result.correctCount + result.wrongCount)}
           </p>
 
           <div className="card p-4 mb-4">
@@ -166,7 +167,9 @@ function Quiz() {
               const userAnswer = answers[index];
               return (
                 <div key={index} className="mb-4">
-                  <h5>Q{index + 1}: {question.question}</h5>
+                  <h5>
+                    Q{index + 1}: {question.question}
+                  </h5>
                   {question.options.map((option, i) => {
                     const isCorrect = i === question.correctAnswer;
                     const isUser = i === userAnswer;
@@ -181,9 +184,7 @@ function Quiz() {
                     );
                   })}
                   {userAnswer === null && (
-                    <div className="p-2 rounded mb-1 bg-secondary text-white">
-                      (Not Answered)
-                    </div>
+                    <div className="p-2 rounded mb-1 bg-secondary text-white">(Not Answered)</div>
                   )}
                 </div>
               );
@@ -206,15 +207,29 @@ function Quiz() {
         : "💪 Keep trying! You’ll do better next time.";
 
       return (
-        <div className="container my-5 d-flex flex-column align-items-center justify-content-center" style={{ minHeight: "80vh" }}>
+        <div
+          className="container my-5 d-flex flex-column align-items-center justify-content-center"
+          style={{ minHeight: "80vh" }}
+        >
           <h2 className="text-center mb-3 fw-bold text-success">✅ Exam Submitted Successfully!</h2>
           <div className="card shadow p-4 text-center" style={{ maxWidth: "500px", width: "100%" }}>
             <h4 className="mb-3">{greeting}</h4>
-            <p>✔ Correct: <b className="text-success">{result.correctCount}</b></p>
-            <p>❌ Wrong: <b className="text-danger">{result.wrongCount}</b></p>
-            <p>⚪ Not Answered: <b>{quiz.questions.length - (result.correctCount + result.wrongCount)}</b></p>
-            <p className="text-muted">🕒 Submitted at: <b>{submittedAt}</b></p>
-            <Link to="/myResults" className="btn btn-primary btn-lg">Back to My Results</Link>
+            <p>
+              ✔ Correct: <b className="text-success">{result.correctCount}</b>
+            </p>
+            <p>
+              ❌ Wrong: <b className="text-danger">{result.wrongCount}</b>
+            </p>
+            <p>
+              ⚪ Not Answered:{" "}
+              <b>{quiz.questions.length - (result.correctCount + result.wrongCount)}</b>
+            </p>
+            <p className="text-muted">
+              🕒 Submitted at: <b>{submittedAt}</b>
+            </p>
+            <Link to="/myResults" className="btn btn-primary btn-lg">
+              Back to My Results
+            </Link>
           </div>
         </div>
       );
@@ -225,7 +240,13 @@ function Quiz() {
   if (!started) {
     return (
       <div className="d-flex justify-content-center align-items-center vh-100 p-3">
-        <div className="card shadow-lg p-4 text-start w-100" style={{ maxWidth: "600px", background: "linear-gradient(135deg, #e9f9f6 0%, #e9f9f6 100%)" }}>
+        <div
+          className="card shadow-lg p-4 text-start w-100"
+          style={{
+            maxWidth: "600px",
+            background: "linear-gradient(135deg, #e9f9f6 0%, #e9f9f6 100%)",
+          }}
+        >
           <h3 className="text-center mb-3">{quiz.title}</h3>
           <p>{quiz.description}</p>
 
@@ -238,106 +259,190 @@ function Quiz() {
               Question Palette Legend:
               <ul className="mt-2" style={{ listStyle: "none", paddingLeft: "0" }}>
                 <li className="d-flex align-items-center mb-1">
-                  <span style={{ display: "inline-block", width: "20px", height: "20px", backgroundColor: "#6c757d", marginRight: "8px", borderRadius: "4px" }}></span>
+                  <span
+                    style={{
+                      display: "inline-block",
+                      width: "20px",
+                      height: "20px",
+                      backgroundColor: "#6c757d",
+                      marginRight: "8px",
+                      borderRadius: "4px",
+                    }}
+                  ></span>
                   Not Visited
                 </li>
                 <li className="d-flex align-items-center mb-1">
-                  <span style={{ display: "inline-block", width: "20px", height: "20px", backgroundColor: "#dc3545", marginRight: "8px", borderRadius: "4px" }}></span>
+                  <span
+                    style={{
+                      display: "inline-block",
+                      width: "20px",
+                      height: "20px",
+                      backgroundColor: "#dc3545",
+                      marginRight: "8px",
+                      borderRadius: "4px",
+                    }}
+                  ></span>
                   Currently Viewing
                 </li>
                 <li className="d-flex align-items-center mb-1">
-                  <span style={{ display: "inline-block", width: "20px", height: "20px", backgroundColor: "#28a745", marginRight: "8px", borderRadius: "4px" }}></span>
+                  <span
+                    style={{
+                      display: "inline-block",
+                      width: "20px",
+                      height: "20px",
+                      backgroundColor: "#28a745",
+                      marginRight: "8px",
+                      borderRadius: "4px",
+                    }}
+                  ></span>
                   Answered
                 </li>
               </ul>
             </li>
-            <li>Time limit: <b>{quiz.timeLimit} minutes</b></li>
+            <li>
+              Time limit: <b>{quiz.timeLimit} minutes</b>
+            </li>
             <li>Submit before time runs out; otherwise, it will auto-submit.</li>
           </ul>
           <div className="form-check mb-3">
-            <input type="checkbox" className="form-check-input me-2" id="agree" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
-            <label className="form-check-label fw-bold" htmlFor="agree">I have read and understood all instructions.</label>
+            <input
+              type="checkbox"
+              className="form-check-input me-2"
+              id="agree"
+              checked={agree}
+              onChange={(e) => setAgree(e.target.checked)}
+            />
+            <label className="form-check-label fw-bold" htmlFor="agree">
+              I have read and understood all instructions.
+            </label>
           </div>
 
           <div className="text-center">
-            <button className="btn btn-success btn-lg" onClick={handleStart} disabled={!agree}>Start Exam</button>
+            <button className="btn btn-success btn-lg" onClick={handleStart} disabled={!agree}>
+              Start Exam
+            </button>
           </div>
         </div>
       </div>
     );
   }
 
-// ---------- LIVE QUIZ ----------
-const minutes = Math.floor(timeLeft / 60);
-const seconds = timeLeft % 60;
-const question = quiz.questions[currentQ];
-const progressColor = timeLeft <= 3 * 60 ? "text-danger" : timeLeft <= 5 * 60 ? "text-warning" : "text-success";
+  // ---------- LIVE QUIZ ----------
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+  const question = quiz.questions[currentQ];
+  const progressColor =
+    timeLeft <= 3 * 60 ? "text-danger" : timeLeft <= 5 * 60 ? "text-warning" : "text-success";
 
-return (
-  <div className="vh-100 vw-100 p-3 d-flex flex-column" style={{ background: "linear-gradient(135deg, #6a85b6 0%, #bac8e0 100%)" }}>
-    {showWarning && exitCount < 3 && (
-      <div className="position-fixed top-0 start-50 translate-middle-x mt-3 alert alert-warning shadow" style={{ zIndex: 9999 }}>
-        ⚠ Fullscreen exited — Please re-enter to start
-        <button className="btn btn-sm btn-warning ms-2" onClick={handleReEnterFullscreen}>Re-enter Fullscreen</button>
-      </div>
-    )}
-
-    {/* Question Palette */}
-    <div className="d-flex justify-content-center mb-3">
-      <div className="card p-2 shadow-sm bg-white d-flex flex-wrap justify-content-center gap-2" style={{ maxWidth: "600px" }}>
-        {quiz.questions.map((_, index) => {
-          let btnClass = "btn btn-secondary btn-sm";
-          if (answers[index] !== null) btnClass = "btn btn-success btn-sm";
-          if (currentQ === index) btnClass = "btn btn-danger btn-sm text-white";
-          return (
-            <button 
-              key={index} 
-              className={btnClass} 
-              style={{ width: "40px", height: "40px", padding: 0 }}
-              onClick={() => setCurrentQ(index)}
-            >
-              {index + 1}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-
-    {/* Question */}
-    <div className="flex-grow-1 d-flex align-items-center justify-content-center">
-      <div className="card p-4 shadow bg-light text-dark w-100" style={{ maxHeight: "100%", overflowY: "auto" }}>
-        <div className="d-flex justify-content-between mb-3">
-          <b>Time Left:</b> <span className={progressColor}>{minutes}:{seconds < 10 ? `0${seconds}` : seconds}</span>
+  return (
+    <div
+      className="vh-100 vw-100 p-3 d-flex flex-column"
+      style={{ background: "linear-gradient(135deg, #6a85b6 0%, #bac8e0 100%)" }}
+    >
+      {showWarning && exitCount < 3 && (
+        <div
+          className="position-fixed top-0 start-50 translate-middle-x mt-3 alert alert-warning shadow"
+          style={{ zIndex: 9999 }}
+        >
+          ⚠ Fullscreen exited — Please re-enter to start
+          <button className="btn btn-sm btn-warning ms-2" onClick={handleReEnterFullscreen}>
+            Re-enter Fullscreen
+          </button>
         </div>
+      )}
 
-        <h5 className="mb-4">{question.question}</h5>
-        {question.options.map((option, i) => (
-          <div key={i} className="form-check mb-2">
-            <input 
-              className="form-check-input" 
-              type="radio" 
-              id={`q${currentQ}-opt${i}`} 
-              name={`q-${currentQ}`} 
-              value={i} 
-              checked={answers[currentQ] === i} 
-              onChange={() => handleOptionChange(currentQ, i)} 
-            />
-            <label className="form-check-label" htmlFor={`q${currentQ}-opt${i}`}>{option}</label>
+      {/* ---------- Question Palette (Multi-row Grid) ---------- */}
+      <div className="d-flex justify-content-center mb-3">
+        <div
+          className="card p-3 shadow-sm bg-white"
+          style={{
+            maxWidth: "600px",
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(45px, 1fr))",
+            gap: "10px",
+          }}
+        >
+          {quiz.questions.map((_, index) => {
+            let btnClass = "btn btn-secondary btn-sm";
+            if (answers[index] !== null) btnClass = "btn btn-success btn-sm";
+            if (currentQ === index) btnClass = "btn btn-danger btn-sm text-white";
+            return (
+              <button
+                key={index}
+                className={btnClass}
+                style={{
+                  height: "45px",
+                  fontWeight: "600",
+                  borderRadius: "8px",
+                }}
+                onClick={() => setCurrentQ(index)}
+              >
+                {index + 1}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ---------- Question Section ---------- */}
+      <div className="flex-grow-1 d-flex align-items-center justify-content-center">
+        <div
+          className="card p-4 shadow bg-light text-dark w-100"
+          style={{ maxHeight: "100%", overflowY: "auto" }}
+        >
+          <div className="d-flex justify-content-between mb-3">
+            <b>Time Left:</b>{" "}
+            <span className={progressColor}>
+              {minutes}:{seconds < 10 ? `0${seconds}` : seconds}
+            </span>
           </div>
-        ))}
 
-        <button className="btn btn-outline-danger btn-sm mt-3" onClick={() => handleClearResponse(currentQ)} disabled={answers[currentQ] === null}>
-          Clear Response
-        </button>
+          <h5 className="mb-4">{question.question}</h5>
+          {question.options.map((option, i) => (
+            <div key={i} className="form-check mb-2">
+              <input
+                className="form-check-input"
+                type="radio"
+                id={`q${currentQ}-opt${i}`}
+                name={`q-${currentQ}`}
+                value={i}
+                checked={answers[currentQ] === i}
+                onChange={() => handleOptionChange(currentQ, i)}
+              />
+              <label className="form-check-label" htmlFor={`q${currentQ}-opt${i}`}>
+                {option}
+              </label>
+            </div>
+          ))}
 
-        <div className="d-flex justify-content-between mt-4 flex-wrap gap-2">
-          <button className="btn btn-outline-secondary" disabled={currentQ === 0} onClick={handlePrev}>Previous</button>
-          <button className="btn btn-primary" onClick={handleNext} disabled={answers[currentQ] === null}>{currentQ < quiz.questions.length - 1 ? "Next" : "Submit"}</button>
+          <button
+            className="btn btn-outline-danger btn-sm mt-3"
+            onClick={() => handleClearResponse(currentQ)}
+            disabled={answers[currentQ] === null}
+          >
+            Clear Response
+          </button>
+
+          <div className="d-flex justify-content-between mt-4 flex-wrap gap-2">
+            <button
+              className="btn btn-outline-secondary"
+              disabled={currentQ === 0}
+              onClick={handlePrev}
+            >
+              Previous
+            </button>
+            <button
+              className="btn btn-primary"
+              onClick={handleNext}
+              disabled={answers[currentQ] === null}
+            >
+              {currentQ < quiz.questions.length - 1 ? "Next" : "Submit"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
 }
 
 export default Quiz;

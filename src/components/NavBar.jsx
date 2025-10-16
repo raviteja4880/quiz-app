@@ -36,14 +36,12 @@ function NavBar({ isLoggedIn, setIsLoggedIn }) {
   }, [showProfileDropdown]);
 
   const handleLogout = () => {
-    if (window.confirm("Are you sure you want to logout?")) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       localStorage.removeItem("isLoggedIn");
       setIsLoggedIn(false);
       setShowProfileDropdown(false);
       navigate("/");
-    }
   };
 
   if (!isLoggedIn) return null;
