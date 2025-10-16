@@ -68,14 +68,15 @@ function Home() {
     >
       {/* 🔹 Fullscreen Hero Section */}
       <section
-        className="d-flex flex-column justify-content-center align-items-center text-center"
+        className="d-flex flex-column justify-content-center align-items-center text-center px-3"
         style={{ minHeight: "100vh" }}
       >
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="w-75"
+          className="w-100"
+          style={{ maxWidth: "960px" }}
         >
           <motion.h1
             initial={{ opacity: 0, y: -20 }}
@@ -97,11 +98,11 @@ function Home() {
           </motion.p>
 
           {/* 🔹 Features */}
-          <div className="row mb-5">
+          <div className="row mb-5 g-3">
             {features.map((f, idx) => {
               const Wrapper = f.link ? Link : "div";
               return (
-                <div className="col-md-4 mb-3" key={idx}>
+                <div className="col-12 col-sm-6 col-md-4" key={idx}>
                   <Wrapper
                     to={f.link || "#"}
                     style={{ textDecoration: "none", color: "inherit" }}
@@ -134,7 +135,7 @@ function Home() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 1.2 }}
-            className="d-flex justify-content-center gap-3"
+            className="d-flex justify-content-center gap-3 flex-wrap"
           >
             <Link
               to="/quizlist"
@@ -161,7 +162,7 @@ function Home() {
           </p>
 
           {/* Social Links */}
-          <div className="d-flex justify-content-center gap-3 mb-4">
+          <div className="d-flex justify-content-center gap-3 mb-4 flex-wrap">
             <a
               href="https://github.com/raviteja4880"
               target="_blank"
@@ -235,6 +236,7 @@ function Home() {
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
+              padding: "1rem",
             }}
           >
             {showAbout && (
@@ -248,7 +250,7 @@ function Home() {
                 style={{
                   background: "rgba(255,255,255,0.95)",
                   maxWidth: "480px",
-                  width: "90%",
+                  width: "100%",
                   boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
                 }}
               >
@@ -284,7 +286,7 @@ function Home() {
                 style={{
                   background: "rgba(255,255,255,0.95)",
                   maxWidth: "500px",
-                  width: "90%",
+                  width: "100%",
                   boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
                 }}
               >

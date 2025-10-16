@@ -151,19 +151,23 @@ function NavBar({ isLoggedIn, setIsLoggedIn }) {
           border-radius: 50px;
           font-weight: 500;
           padding: 8px 18px;
-          min-width: 110px; /* ✅ Ensures equal button size */
+          min-width: 110px; /* Ensures equal button size */
           text-align: center;
           transition: all 0.3s ease;
+          text-decoration: none;
         }
 
         .nav-buttons-wrapper .nav-btn:hover {
           background: #eaeaea;
           color: #000;
+          text-decoration: none;
+
         }
 
         .nav-buttons-wrapper .nav-btn.active {
           background: #333;
           color: #fff;
+          text-decoration: none;
         }
 
         .profile-btn {

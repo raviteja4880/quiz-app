@@ -267,60 +267,77 @@ function Quiz() {
     );
   }
 
-  // ---------- LIVE QUIZ ----------
-  const minutes = Math.floor(timeLeft / 60);
-  const seconds = timeLeft % 60;
-  const question = quiz.questions[currentQ];
-  const progressColor = timeLeft <= 3 * 60 ? "text-danger" : timeLeft <= 5 * 60 ? "text-warning" : "text-success";
+// ---------- LIVE QUIZ ----------
+const minutes = Math.floor(timeLeft / 60);
+const seconds = timeLeft % 60;
+const question = quiz.questions[currentQ];
+const progressColor = timeLeft <= 3 * 60 ? "text-danger" : timeLeft <= 5 * 60 ? "text-warning" : "text-success";
 
-  return (
-    <div className="vh-100 vw-100 p-3 d-flex flex-column flex-lg-row" style={{ background: "linear-gradient(135deg, #6a85b6 0%, #bac8e0 100%)" }}>
-      {showWarning && exitCount < 3 && (
-        <div className="position-fixed top-0 start-50 translate-middle-x mt-3 alert alert-warning shadow" style={{ zIndex: 9999 }}>
-          ⚠ Fullscreen exited — Please re-enter to start
-          <button className="btn btn-sm btn-warning ms-2" onClick={handleReEnterFullscreen}>Re-enter Fullscreen</button>
-        </div>
-      )}
-
-      {/* Question Palette */}
-      <div className="d-flex flex-row flex-lg-column mb-3 mb-lg-0">
-        <div className="card p-2 shadow-sm bg-white d-flex flex-row flex-lg-column overflow-auto" style={{ maxHeight: "150px", minWidth: "100%", gap: "4px" }}>
-          {quiz.questions.map((_, index) => {
-            let btnClass = "btn btn-secondary btn-sm";
-            if (answers[index] !== null) btnClass = "btn btn-success btn-sm";
-            if (currentQ === index) btnClass = "btn btn-danger btn-sm text-white";
-            return <button key={index} className={btnClass} onClick={() => setCurrentQ(index)}>{index + 1}</button>;
-          })}
-        </div>
+return (
+  <div className="vh-100 vw-100 p-3 d-flex flex-column" style={{ background: "linear-gradient(135deg, #6a85b6 0%, #bac8e0 100%)" }}>
+    {showWarning && exitCount < 3 && (
+      <div className="position-fixed top-0 start-50 translate-middle-x mt-3 alert alert-warning shadow" style={{ zIndex: 9999 }}>
+        ⚠ Fullscreen exited — Please re-enter to start
+        <button className="btn btn-sm btn-warning ms-2" onClick={handleReEnterFullscreen}>Re-enter Fullscreen</button>
       </div>
+    )}
 
-      {/* Question */}
-      <div className="flex-grow-1 d-flex align-items-center justify-content-center mt-3 mt-lg-0">
-        <div className="card p-4 shadow bg-light text-dark w-100" style={{ maxHeight: "100%", overflowY: "auto" }}>
-          <div className="d-flex justify-content-between mb-3">
-            <b>Time Left:</b> <span className={progressColor}>{minutes}:{seconds < 10 ? `0${seconds}` : seconds}</span>
+    {/* Question Palette */}
+    <div className="d-flex justify-content-center mb-3">
+      <div className="card p-2 shadow-sm bg-white d-flex flex-wrap justify-content-center gap-2" style={{ maxWidth: "600px" }}>
+        {quiz.questions.map((_, index) => {
+          let btnClass = "btn btn-secondary btn-sm";
+          if (answers[index] !== null) btnClass = "btn btn-success btn-sm";
+          if (currentQ === index) btnClass = "btn btn-danger btn-sm text-white";
+          return (
+            <button 
+              key={index} 
+              className={btnClass} 
+              style={{ width: "40px", height: "40px", padding: 0 }}
+              onClick={() => setCurrentQ(index)}
+            >
+              {index + 1}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+
+    {/* Question */}
+    <div className="flex-grow-1 d-flex align-items-center justify-content-center">
+      <div className="card p-4 shadow bg-light text-dark w-100" style={{ maxHeight: "100%", overflowY: "auto" }}>
+        <div className="d-flex justify-content-between mb-3">
+          <b>Time Left:</b> <span className={progressColor}>{minutes}:{seconds < 10 ? `0${seconds}` : seconds}</span>
+        </div>
+
+        <h5 className="mb-4">{question.question}</h5>
+        {question.options.map((option, i) => (
+          <div key={i} className="form-check mb-2">
+            <input 
+              className="form-check-input" 
+              type="radio" 
+              id={`q${currentQ}-opt${i}`} 
+              name={`q-${currentQ}`} 
+              value={i} 
+              checked={answers[currentQ] === i} 
+              onChange={() => handleOptionChange(currentQ, i)} 
+            />
+            <label className="form-check-label" htmlFor={`q${currentQ}-opt${i}`}>{option}</label>
           </div>
+        ))}
 
-          <h5 className="mb-4">{question.question}</h5>
-          {question.options.map((option, i) => (
-            <div key={i} className="form-check mb-2">
-              <input className="form-check-input" type="radio" id={`q${currentQ}-opt${i}`} name={`q-${currentQ}`} value={i} checked={answers[currentQ] === i} onChange={() => handleOptionChange(currentQ, i)} />
-              <label className="form-check-label" htmlFor={`q${currentQ}-opt${i}`}>{option}</label>
-            </div>
-          ))}
+        <button className="btn btn-outline-danger btn-sm mt-3" onClick={() => handleClearResponse(currentQ)} disabled={answers[currentQ] === null}>
+          Clear Response
+        </button>
 
-          <button className="btn btn-outline-danger btn-sm mt-3" onClick={() => handleClearResponse(currentQ)} disabled={answers[currentQ] === null}>
-            Clear Response
-          </button>
-
-          <div className="d-flex justify-content-between mt-4 flex-wrap gap-2">
-            <button className="btn btn-outline-secondary" disabled={currentQ === 0} onClick={handlePrev}>Previous</button>
-            <button className="btn btn-primary" onClick={handleNext} disabled={answers[currentQ] === null}>{currentQ < quiz.questions.length - 1 ? "Next" : "Submit"}</button>
-          </div>
+        <div className="d-flex justify-content-between mt-4 flex-wrap gap-2">
+          <button className="btn btn-outline-secondary" disabled={currentQ === 0} onClick={handlePrev}>Previous</button>
+          <button className="btn btn-primary" onClick={handleNext} disabled={answers[currentQ] === null}>{currentQ < quiz.questions.length - 1 ? "Next" : "Submit"}</button>
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 }
 
 export default Quiz;
