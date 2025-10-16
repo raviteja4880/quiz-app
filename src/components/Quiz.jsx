@@ -1,10 +1,11 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { quizAPI } from "../services/api";
 import Loader from "./Loader";
 
 function Quiz() {
   const { id, resultId } = useParams();
+  const questionRefs = useRef([]);
 
   const [quiz, setQuiz] = useState(null);
   const [answers, setAnswers] = useState([]);
@@ -17,8 +18,8 @@ function Quiz() {
   const [result, setResult] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [agree, setAgree] = useState(false);
-
   const [timerId, setTimerId] = useState(null);
+
   const reviewMode = !!resultId;
 
   // ===================== Fetch Quiz =====================
@@ -62,8 +63,8 @@ function Quiz() {
     if (submitting || reviewMode || result) return;
 
     if (timerId) clearInterval(timerId);
-
     setSubmitting(true);
+
     try {
       const res = await quizAPI.submit(quiz._id, answers);
       if (document.fullscreenElement) await document.exitFullscreen();
@@ -114,14 +115,12 @@ function Quiz() {
   // ===================== Handlers =====================
   const handleStart = async () => {
     if (!agree) return;
-    if (document.documentElement.requestFullscreen)
-      await document.documentElement.requestFullscreen();
+    if (document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen();
     setStarted(true);
   };
 
   const handleReEnterFullscreen = async () => {
-    if (document.documentElement.requestFullscreen)
-      await document.documentElement.requestFullscreen();
+    if (document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen();
     setShowWarning(false);
   };
 
@@ -142,30 +141,33 @@ function Quiz() {
   const handleNext = () => {
     if (currentQ < quiz.questions.length - 1) setCurrentQ(currentQ + 1);
     else handleSubmit();
+    scrollToQuestion(currentQ + 1);
   };
 
   const handlePrev = () => {
     if (currentQ > 0) setCurrentQ(currentQ - 1);
+    scrollToQuestion(currentQ - 1);
+  };
+
+  const scrollToQuestion = (index) => {
+    if (questionRefs.current[index]) {
+      questionRefs.current[index].scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
 
   if (!quiz) return <Loader />;
-
-  // ===================== UI =====================
 
   // ---------- RESULT / REVIEW ----------
   if (result) {
     if (reviewMode) {
       return (
-        <div className="container my-5 quiz-container">
+        <div className="container my-5">
           <h2 className="text-center mb-4">📘 Quiz Review</h2>
           <h4 className="text-center mb-3">
             Score: {result.score} / {result.total}
           </h4>
           <p className="text-center mb-4">
-            ✔ Correct: {result.correctCount} | ❌ Wrong: {result.wrongCount} | ⚪
-            Not Answered:{" "}
-            {quiz.questions.length -
-              (result.correctCount + result.wrongCount)}
+            ✔ Correct: {result.correctCount} | ❌ Wrong: {result.wrongCount} | ⚪ Not Answered: {quiz.questions.length - (result.correctCount + result.wrongCount)}
           </p>
 
           <div className="card p-4 mb-4">
@@ -173,18 +175,14 @@ function Quiz() {
               const userAnswer = answers[index];
               return (
                 <div key={index} className="mb-4">
-                  <h5>
-                    Q{index + 1}: {q.question}
-                  </h5>
+                  <h5>Q{index + 1}: {q.question}</h5>
                   {q.options.map((option, i) => {
                     const isCorrect = i === q.correctAnswer;
                     const isUser = i === userAnswer;
                     let bgClass = "bg-light";
                     if (isCorrect) bgClass = "bg-success text-white";
-                    else if (isUser && !isCorrect)
-                      bgClass = "bg-danger text-white";
-                    else if (userAnswer === null)
-                      bgClass = "bg-secondary text-white";
+                    else if (isUser && !isCorrect) bgClass = "bg-danger text-white";
+                    else if (userAnswer === null) bgClass = "bg-secondary text-white";
                     return (
                       <div key={i} className={`p-2 rounded mb-1 ${bgClass}`}>
                         {option}
@@ -208,52 +206,71 @@ function Quiz() {
           </div>
         </div>
       );
+    } else {
+      const submittedAt = new Date().toLocaleString();
+      const percentage = result.percentage || (result.score / result.total) * 100;
+      const isGood = percentage >= 70;
+      const greeting = isGood
+        ? "🎉 Great job! You performed very well!"
+        : "💪 Keep trying! You’ll do better next time.";
+
+      return (
+        <div className="container my-5 d-flex flex-column align-items-center justify-content-center" style={{ minHeight: "80vh" }}>
+          <h2 className="text-center mb-3 fw-bold text-success">✅ Exam Submitted Successfully!</h2>
+          <div className="card shadow p-4 text-center" style={{ maxWidth: "500px", width: "100%" }}>
+            <h4 className="mb-3">{greeting}</h4>
+            <p>✔ Correct: <b className="text-success">{result.correctCount}</b></p>
+            <p>❌ Wrong: <b className="text-danger">{result.wrongCount}</b></p>
+            <p>⚪ Not Answered: <b>{quiz.questions.length - (result.correctCount + result.wrongCount)}</b></p>
+            <p className="text-muted">🕒 Submitted at: <b>{submittedAt}</b></p>
+            <Link to="/myResults" className="btn btn-primary btn-lg">Back to My Results</Link>
+          </div>
+        </div>
+      );
     }
   }
 
   // ---------- BEFORE START ----------
   if (!started) {
     return (
-      <div className="d-flex justify-content-center align-items-center vh-100 px-3">
-        <div className="card shadow-lg p-4 text-start start-card">
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="card shadow-lg p-4 text-start w-50" style={{ background: "linear-gradient(135deg, #e9f9f6 0%, #e9f9f6 100%)" }}>
           <h3 className="text-center mb-3">{quiz.title}</h3>
           <p>{quiz.description}</p>
-          <ul className="mb-4 instruction-list">
+
+          {/* Instructions */}
+          <ul className="mb-4" style={{ listStyleType: "disc", paddingLeft: "1.5rem" }}>
             <li>Read all questions carefully before answering.</li>
             <li>You must stay in fullscreen mode during the exam.</li>
+            <li>If you exit fullscreen 3 times, your exam will be automatically submitted.</li>
+            <li>Each question must be answered sequentially. You can revisit previous questions.</li>
             <li>
-              If you exit fullscreen 3 times, your exam will be automatically
-              submitted.
+              Question Palette Legend:
+              <ul className="mt-2" style={{ listStyle: "none", paddingLeft: "0" }}>
+                <li className="d-flex align-items-center mb-1">
+                  <span style={{ display: "inline-block", width: "20px", height: "20px", backgroundColor: "#6c757d", marginRight: "8px", borderRadius: "4px" }}></span>
+                  Not Visited
+                </li>
+                <li className="d-flex align-items-center mb-1">
+                  <span style={{ display: "inline-block", width: "20px", height: "20px", backgroundColor: "#dc3545", marginRight: "8px", borderRadius: "4px" }}></span>
+                  Currently Viewing
+                </li>
+                <li className="d-flex align-items-center mb-1">
+                  <span style={{ display: "inline-block", width: "20px", height: "20px", backgroundColor: "#28a745", marginRight: "8px", borderRadius: "4px" }}></span>
+                  Answered
+                </li>
+              </ul>
             </li>
-            <li>
-              Each question must be answered sequentially. You can revisit
-              previous questions.
-            </li>
-            <li>
-              Time limit: <b>{quiz.timeLimit} minutes</b>
-            </li>
+            <li>Time limit: <b>{quiz.timeLimit} minutes</b></li>
+            <li>Submit before time runs out; otherwise, it will auto-submit.</li>
           </ul>
           <div className="form-check mb-3">
-            <input
-              type="checkbox"
-              className="form-check-input me-2"
-              id="agree"
-              checked={agree}
-              onChange={(e) => setAgree(e.target.checked)}
-            />
-            <label className="form-check-label fw-bold" htmlFor="agree">
-              I have read and understood all instructions.
-            </label>
+            <input type="checkbox" className="form-check-input me-2" id="agree" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
+            <label className="form-check-label fw-bold" htmlFor="agree">I have read and understood all instructions.</label>
           </div>
 
           <div className="text-center">
-            <button
-              className="btn btn-success btn-lg"
-              onClick={handleStart}
-              disabled={!agree}
-            >
-              Start Exam
-            </button>
+            <button className="btn btn-success btn-lg" onClick={handleStart} disabled={!agree}>Start Exam</button>
           </div>
         </div>
       </div>
@@ -264,180 +281,69 @@ function Quiz() {
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
   const q = quiz.questions[currentQ];
-  const progressColor =
-    timeLeft <= 3 * 60
-      ? "text-danger"
-      : timeLeft <= 5 * 60
-      ? "text-warning"
-      : "text-success";
+  const progressColor = timeLeft <= 3 * 60 ? "text-danger" : timeLeft <= 5 * 60 ? "text-warning" : "text-success";
 
   return (
-    <div className="quiz-wrapper p-3">
+    <div className="vh-100 vw-100 p-3 d-flex flex-column flex-md-row" style={{ background: "linear-gradient(135deg, #6a85b6 0%, #bac8e0 100%)" }}>
       {showWarning && exitCount < 3 && (
         <div className="position-fixed top-0 start-50 translate-middle-x mt-3 alert alert-warning shadow" style={{ zIndex: 9999 }}>
           ⚠ Fullscreen exited — Please re-enter to start
-          <button
-            className="btn btn-sm btn-warning ms-2"
-            onClick={handleReEnterFullscreen}
-          >
-            Re-enter Fullscreen
-          </button>
+          <button className="btn btn-sm btn-warning ms-2" onClick={handleReEnterFullscreen}>Re-enter Fullscreen</button>
         </div>
       )}
 
-      <div className="quiz-layout">
-        <div className="quiz-sidebar">
-          <div className="card p-3 shadow-sm bg-white flex-grow-1 d-flex flex-column">
-            <h5 className="text-center mb-3">Exam Progress</h5>
-            <div className="d-flex justify-content-between mb-3">
-              <b>Time Left:</b>{" "}
-              <span className={progressColor}>
-                {minutes}:{seconds < 10 ? `0${seconds}` : seconds}
-              </span>
-            </div>
-            <div className="d-grid gap-2 flex-grow-1">
-              {quiz.questions.map((_, index) => {
-                let btnClass = "btn btn-secondary";
-                if (answers[index] !== null) btnClass = "btn btn-success";
-                if (currentQ === index) btnClass = "btn btn-danger text-white";
-                return (
-                  <button
-                    key={index}
-                    className={btnClass}
-                    onClick={() => setCurrentQ(index)}
-                  >
-                    {index + 1}
-                  </button>
-                );
-              })}
-            </div>
+      {/* Desktop Sidebar */}
+      <div className="d-none d-md-flex flex-shrink-0 me-3" style={{ width: "200px" }}>
+        <div className="card p-3 shadow-sm bg-white flex-grow-1 d-flex flex-column">
+          <h5 className="text-center mb-3">Exam Progress</h5>
+          <div className="d-flex justify-content-between mb-3">
+            <b>Time Left:</b> <span className={progressColor}>{minutes}:{seconds < 10 ? `0${seconds}` : seconds}</span>
           </div>
-        </div>
-
-        <div className="quiz-content">
-          <div className="card p-4 shadow bg-light text-dark flex-grow-1 quiz-card">
-            <h5 className="mb-4">{q.question}</h5>
-            {q.options.map((option, i) => (
-              <div key={i} className="form-check mb-2">
-                <input
-                  className="form-check-input"
-                  type="radio"
-                  id={`q${currentQ}-opt${i}`}
-                  name={`q-${currentQ}`}
-                  value={i}
-                  checked={answers[currentQ] === i}
-                  onChange={() => handleOptionChange(currentQ, i)}
-                />
-                <label
-                  className="form-check-label"
-                  htmlFor={`q${currentQ}-opt${i}`}
-                >
-                  {option}
-                </label>
-              </div>
-            ))}
-
-            <button
-              className="btn btn-outline-danger btn-sm mt-3"
-              onClick={() => handleClearResponse(currentQ)}
-              disabled={answers[currentQ] === null}
-            >
-              Clear Response
-            </button>
-
-            <div className="d-flex justify-content-between mt-4">
-              <button
-                className="btn btn-outline-secondary"
-                disabled={currentQ === 0}
-                onClick={handlePrev}
-              >
-                Previous
-              </button>
-              <button
-                className="btn btn-primary"
-                onClick={handleNext}
-                disabled={answers[currentQ] === null}
-              >
-                {currentQ < quiz.questions.length - 1 ? "Next" : "Submit"}
-              </button>
-            </div>
+          <div className="d-grid gap-2 flex-grow-1">
+            {quiz.questions.map((_, index) => {
+              let btnClass = "btn btn-secondary";
+              if (answers[index] !== null) btnClass = "btn btn-success";
+              if (currentQ === index) btnClass = "btn btn-danger text-white";
+              return <button key={index} className={btnClass} onClick={() => setCurrentQ(index)}>{index + 1}</button>;
+            })}
           </div>
         </div>
       </div>
 
-      {/* Responsive Styles */}
-      <style>{`
-        .quiz-wrapper {
-          background: linear-gradient(135deg, #6a85b6 0%, #bac8e0 100%);
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-        }
+      <div className="flex-grow-1 d-flex flex-column align-items-center justify-content-start">
+        {/* Mobile Palette */}
+        <div className="d-flex d-md-none w-100 mb-2 overflow-auto">
+          {quiz.questions.map((_, index) => {
+            let btnClass = "btn btn-secondary btn-sm me-1";
+            if (answers[index] !== null) btnClass = "btn btn-success btn-sm me-1";
+            if (currentQ === index) btnClass = "btn btn-danger btn-sm text-white me-1";
+            return <button key={index} className={btnClass} onClick={() => {setCurrentQ(index); scrollToQuestion(index);}}>{index + 1}</button>;
+          })}
+        </div>
 
-        .quiz-layout {
-          display: flex;
-          flex-direction: row;
-          gap: 1rem;
-          flex: 1;
-        }
+        {/* Question Card */}
+        <div className="card p-4 shadow bg-light text-dark flex-grow-1 w-100" style={{ maxHeight: "100%", overflowY: "auto" }}>
+          {quiz.questions.map((qItem, index) => (
+            <div key={index} ref={(el) => questionRefs.current[index] = el} className={currentQ === index ? "mb-4" : "d-none"}>
+              <h5 className="mb-4">{qItem.question}</h5>
+              {qItem.options.map((option, i) => (
+                <div key={i} className="form-check mb-2">
+                  <input className="form-check-input" type="radio" id={`q${index}-opt${i}`} name={`q-${index}`} value={i} checked={answers[index] === i} onChange={() => handleOptionChange(index, i)} />
+                  <label className="form-check-label" htmlFor={`q${index}-opt${i}`}>{option}</label>
+                </div>
+              ))}
+              <button className="btn btn-outline-danger btn-sm mt-3" onClick={() => handleClearResponse(index)} disabled={answers[index] === null}>
+                Clear Response
+              </button>
+            </div>
+          ))}
 
-        .quiz-sidebar {
-          width: 200px;
-        }
-
-        .quiz-content {
-          flex: 1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .start-card {
-          width: 50%;
-          background: linear-gradient(135deg, #e9f9f6 0%, #e9f9f6 100%);
-        }
-
-        @media (max-width: 992px) {
-          .start-card {
-            width: 80%;
-          }
-        }
-
-        @media (max-width: 768px) {
-          .quiz-layout {
-            flex-direction: column;
-          }
-          .quiz-sidebar {
-            width: 100%;
-            order: 2;
-          }
-          .quiz-content {
-            order: 1;
-          }
-          .quiz-card {
-            width: 100%;
-          }
-        }
-
-        @media (max-width: 576px) {
-          .quiz-wrapper {
-            padding: 1rem;
-          }
-          .start-card {
-            width: 100%;
-            padding: 1.5rem;
-          }
-          .quiz-card {
-            padding: 1.5rem;
-          }
-          h5 {
-            font-size: 1rem;
-          }
-          button {
-            font-size: 0.9rem;
-          }
-        }
-      `}</style>
+          <div className="d-flex justify-content-between mt-4">
+            <button className="btn btn-outline-secondary" disabled={currentQ === 0} onClick={handlePrev}>Previous</button>
+            <button className="btn btn-primary" onClick={handleNext} disabled={answers[currentQ] === null}>{currentQ < quiz.questions.length - 1 ? "Next" : "Submit"}</button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

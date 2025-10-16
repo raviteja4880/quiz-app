@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { authAPI } from "../services/api";
@@ -14,7 +14,18 @@ function LandingPage({ setIsLoggedIn }) {
     password: "",
     adminKey: "",
   });
+
   const navigate = useNavigate();
+  const signupRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile screen
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -30,11 +41,9 @@ function LandingPage({ setIsLoggedIn }) {
       };
 
       const { data } = await authAPI.login(payload);
-
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       localStorage.setItem("isLoggedIn", "true");
-
       if (setIsLoggedIn) setIsLoggedIn(true);
       navigate(data.user.role === "admin" ? "/admin" : "/home");
     } catch (err) {
@@ -47,7 +56,6 @@ function LandingPage({ setIsLoggedIn }) {
   const handleSignup = async (e) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       const payload = {
         name: formData.name,
@@ -56,17 +64,22 @@ function LandingPage({ setIsLoggedIn }) {
         role,
         ...(role === "admin" && formData.adminKey ? { adminKey: formData.adminKey } : {}),
       };
-
       const { data } = await authAPI.signup(payload);
-
       alert(data.message || "Signup successful! Please login.");
-      setIsFlipped(false);
       setFormData({ name: "", email: "", password: "", adminKey: "" });
+      if (!isMobile) setIsFlipped(false);
     } catch (err) {
-      console.error("Signup error:", err.response?.data || err.message);
       alert("Signup failed: " + (err.response?.data?.message || err.message));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGetStarted = () => {
+    if (isMobile && signupRef.current) {
+      signupRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      setIsFlipped(true);
     }
   };
 
@@ -82,10 +95,7 @@ function LandingPage({ setIsLoggedIn }) {
     >
       <div
         className="container d-flex flex-column flex-lg-row align-items-center justify-content-between"
-        style={{
-          maxWidth: "1200px",
-          gap: "2rem",
-        }}
+        style={{ maxWidth: "1200px", gap: "2rem" }}
       >
         {/* LEFT CONTENT */}
         <motion.div
@@ -93,17 +103,12 @@ function LandingPage({ setIsLoggedIn }) {
           initial={{ opacity: 0, x: -80 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 1 }}
-          style={{
-            maxWidth: "550px",
-          }}
+          style={{ maxWidth: "550px" }}
         >
           <h1 className="fw-bold display-6 display-md-5 mb-3">
             Welcome to <span style={{ color: "#ffe082" }}>QuizApp</span> 🎓
           </h1>
-          <p
-            className="fs-6 fs-md-5 mb-4"
-            style={{ lineHeight: "1.6", wordBreak: "break-word" }}
-          >
+          <p className="fs-6 fs-md-5 mb-4" style={{ lineHeight: "1.6" }}>
             A fun, engaging, and smart quiz platform where you can test your
             skills, challenge your friends, and explore your knowledge!
           </p>
@@ -115,29 +120,34 @@ function LandingPage({ setIsLoggedIn }) {
           >
             <h5 className="fw-semibold mb-3">✨ Key Features</h5>
             <ul className="text-light list-unstyled fs-6 fs-md-5">
-              <li className="mb-2 d-flex align-items-center justify-content-center justify-content-lg-start flex-wrap">
-                <FaBullseye className="me-2 text-warning" />
-                Interactive quizzes with instant feedback
-              </li>
-              <li className="mb-2 d-flex align-items-center justify-content-center justify-content-lg-start flex-wrap">
-                <FaChartBar className="me-2 text-warning" />
-                Track your progress and scores
-              </li>
-              <li className="mb-2 d-flex align-items-center justify-content-center justify-content-lg-start flex-wrap">
-                <FaUserShield className="me-2 text-warning" />
-                Role-based access for Admins & Students
-              </li>
-              <li className="mb-2 d-flex align-items-center justify-content-center justify-content-lg-start flex-wrap">
-                <FaClock className="me-2 text-warning" />
-                Timed challenges and topic-wise quizzes
-              </li>
+              {[{
+                icon: <FaBullseye className="text-warning" />,
+                text: "Interactive quizzes with instant feedback"
+              }, {
+                icon: <FaChartBar className="text-warning" />,
+                text: "Track your progress and scores"
+              }, {
+                icon: <FaUserShield className="text-warning" />,
+                text: "Role-based access for Admins & Students"
+              }, {
+                icon: <FaClock className="text-warning" />,
+                text: "Timed challenges and topic-wise quizzes"
+              }].map((item, idx) => (
+                <li
+                  key={idx}
+                  className="mb-2 d-flex align-items-center gap-2 flex-wrap justify-content-center justify-content-lg-start"
+                >
+                  <span style={{ minWidth: "24px" }}>{item.icon}</span>
+                  <span>{item.text}</span>
+                </li>
+              ))}
             </ul>
 
             <motion.button
               className="btn btn-warning fw-bold px-4 py-2 mt-3"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setIsFlipped(true)}
+              onClick={handleGetStarted}
             >
               Get Started
             </motion.button>
@@ -146,6 +156,7 @@ function LandingPage({ setIsLoggedIn }) {
 
         {/* RIGHT CARD */}
         <motion.div
+          ref={signupRef}
           layout
           transition={{ layout: { duration: 0.5, ease: "easeInOut" } }}
           className="shadow-lg p-4 p-md-5 w-100"
@@ -167,6 +178,7 @@ function LandingPage({ setIsLoggedIn }) {
                 transition={{ duration: 0.5 }}
                 layout
               >
+                {/* LOGIN FORM */}
                 <h3 className="text-center fw-bold mb-4">Login</h3>
 
                 <div className="d-flex justify-content-center mb-4 flex-wrap gap-2">
@@ -254,6 +266,7 @@ function LandingPage({ setIsLoggedIn }) {
                 transition={{ duration: 0.5 }}
                 layout
               >
+                {/* SIGNUP FORM */}
                 <h3 className="text-center fw-bold mb-4">Signup</h3>
 
                 <div className="d-flex justify-content-center mb-4 flex-wrap gap-2">

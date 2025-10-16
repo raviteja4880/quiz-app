@@ -8,16 +8,12 @@ function NavBar({ isLoggedIn, setIsLoggedIn }) {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const profileDropdownRef = useRef();
 
-  // Sync user from localStorage
   useEffect(() => {
-    const handleStorageChange = () => {
-      setUser(JSON.parse(localStorage.getItem("user")));
-    };
+    const handleStorageChange = () => setUser(JSON.parse(localStorage.getItem("user")));
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-  // Close dropdown on outside click or ESC
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
@@ -25,9 +21,7 @@ function NavBar({ isLoggedIn, setIsLoggedIn }) {
       }
     };
     const handleEsc = (event) => {
-      if (event.key === "Escape") {
-        setShowProfileDropdown(false);
-      }
+      if (event.key === "Escape") setShowProfileDropdown(false);
     };
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("keydown", handleEsc);
@@ -37,7 +31,6 @@ function NavBar({ isLoggedIn, setIsLoggedIn }) {
     };
   }, []);
 
-  // Lock scroll when dropdown is open
   useEffect(() => {
     document.body.style.overflow = showProfileDropdown ? "hidden" : "auto";
   }, [showProfileDropdown]);
@@ -56,143 +49,123 @@ function NavBar({ isLoggedIn, setIsLoggedIn }) {
   if (!isLoggedIn) return null;
 
   return (
-    <nav
-      className="navbar navbar-expand-lg px-4 shadow-sm"
-      style={{
-        background: "#fff",
-        borderBottom: "1px solid #eaeaea",
-        position: "sticky",
-        top: 0,
-        zIndex: 1050,
-      }}
-    >
-      <Link className="navbar-brand fw-bold fs-4 text-dark" to="/home">
-        Quiz App
-      </Link>
-
-      <div className="ms-auto d-flex align-items-center">
-        <Link
-          className={`btn nav-btn mx-1 ${location.pathname === "/home" ? "active" : ""}`}
-          to="/home"
-        >
-          Home
+    <nav className="navbar navbar-expand-lg shadow-sm">
+      <div className="container-fluid">
+        {/* Logo */}
+        <Link className="navbar-brand fw-bold fs-4" to="/home">
+          Quiz App
         </Link>
 
-        <Link
-          className={`btn nav-btn mx-1 ${location.pathname === "/quizlist" ? "active" : ""}`}
-          to="/quizlist"
-        >
-          Quiz List
-        </Link>
-
-        {user?.role === "user" && (
-          <Link
-            className={`btn nav-btn mx-1 ${location.pathname === "/myresults" ? "active" : ""}`}
-            to="/myresults"
-          >
-            My Results
-          </Link>
-        )}
-
-        {user?.role === "admin" && (
-          <>
+        {/* Navbar Links */}
+        <div className="d-flex align-items-center ms-auto">
+          <div className="d-flex gap-2 nav-buttons-wrapper">
             <Link
-              className={`btn nav-btn mx-1 ${location.pathname === "/admin" ? "active" : ""}`}
-              to="/admin"
+              className={`nav-btn ${location.pathname === "/home" ? "active" : ""}`}
+              to="/home"
             >
-              Admin Panel
+              Home
             </Link>
             <Link
-              className={`btn nav-btn mx-1 ${location.pathname === "/search-results" ? "active" : ""}`}
-              to="/search-results"
+              className={`nav-btn ${location.pathname === "/quizlist" ? "active" : ""}`}
+              to="/quizlist"
             >
-              Search Results
+              Quiz List
             </Link>
-          </>
-        )}
+            {user?.role === "user" && (
+              <Link
+                className={`nav-btn ${location.pathname === "/myresults" ? "active" : ""}`}
+                to="/myresults"
+              >
+                My Results
+              </Link>
+            )}
+            {user?.role === "admin" && (
+              <>
+                <Link
+                  className={`nav-btn ${location.pathname === "/admin" ? "active" : ""}`}
+                  to="/admin"
+                >
+                  Admin Panel
+                </Link>
+                <Link
+                  className={`nav-btn ${location.pathname === "/search-results" ? "active" : ""}`}
+                  to="/search-results"
+                >
+                  Search Results
+                </Link>
+              </>
+            )}
+          </div>
 
-        {/* Profile Dropdown */}
-        <div className="position-relative" ref={profileDropdownRef}>
-          <button
-            className="profile-btn d-flex align-items-center"
-            onClick={() => setShowProfileDropdown((prev) => !prev)}
-          >
-            <div className="avatar-circle me-2">
-              {user?.name?.charAt(0).toUpperCase()}
-            </div>
-            <span className="fw-semibold text-dark">{user?.name}</span>
-          </button>
-
-          {showProfileDropdown && (
-            <div
-              className="dropdown-card"
-              style={{
-                position: "absolute",
-                top: "120%",
-                right: 0,
-                width: "260px",
-                zIndex: 2000,
-                borderRadius: "10px",
-                background: "#fff",
-                boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
-                overflow: "hidden",
-              }}
+          {/* Profile Dropdown */}
+          <div className="position-relative ms-3" ref={profileDropdownRef}>
+            <button
+              className="profile-btn d-flex align-items-center"
+              onClick={() => setShowProfileDropdown((prev) => !prev)}
             >
-              {/* Profile Section */}
-              <div className="d-flex align-items-center px-3 py-3 border-bottom">
-                <div className="avatar-circle me-2">
-                  {user?.name?.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <div className="fw-semibold">{user?.name}</div>
-                  <small className="text-muted">{user?.email}</small>
-                </div>
+              <div className="avatar-circle me-2">
+                {user?.name?.charAt(0).toUpperCase()}
               </div>
+              <span className="fw-semibold">{user?.name}</span>
+            </button>
 
-              {/* Menu Items */}
-              <div className="d-flex flex-column">
-                <div
-                  className="dropdown-role px-3 py-2"
-                  style={{
-                    fontSize: "14px",
-                    color: "#555",
-                    display: "flex",
-                    alignItems: "center",
-                  }}
-                >
-                  <i className="bi bi-shield-lock me-2"></i> Role: {user?.role}
+            {showProfileDropdown && (
+              <div className="dropdown-card">
+                <div className="d-flex align-items-center px-3 py-3 border-bottom">
+                  <div className="avatar-circle me-2">
+                    {user?.name?.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <div className="fw-semibold">{user?.name}</div>
+                    <small className="text-muted">{user?.email}</small>
+                  </div>
                 </div>
-                <button
-                  className="dropdown-item-btn text-danger fw-semibold"
-                  onClick={handleLogout}
-                >
-                  <i className="bi bi-box-arrow-right me-2 text-danger"></i> Logout
-                </button>
+                <div className="d-flex flex-column">
+                  <div className="dropdown-role px-3 py-2">
+                    <i className="bi bi-shield-lock me-2"></i> Role: {user?.role}
+                  </div>
+                  <button className="dropdown-item-btn text-danger fw-semibold" onClick={handleLogout}>
+                    <i className="bi bi-box-arrow-right me-2 text-danger"></i> Logout
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Custom Styling */}
+      {/* Custom Styles */}
       <style>{`
-        .nav-btn {
+        .navbar {
+          background: #fff;
+          border-bottom: 1px solid #eaeaea;
+          position: sticky;
+          top: 0;
+          z-index: 1050;
+        }
+
+        .nav-buttons-wrapper .nav-btn {
           background: #f5f5f5;
           color: #333;
           border: none;
           border-radius: 50px;
           font-weight: 500;
-          padding: 6px 18px;
+          padding: 8px 18px;
+          min-width: 110px; /* ✅ Ensures equal button size */
+          text-align: center;
           transition: all 0.3s ease;
         }
-        .nav-btn:hover {
+
+        .nav-buttons-wrapper .nav-btn:hover {
           background: #eaeaea;
           color: #000;
         }
-        .nav-btn.active {
+
+        .nav-buttons-wrapper .nav-btn.active {
           background: #333;
           color: #fff;
         }
+
         .profile-btn {
           border: none;
           background: none;
@@ -201,9 +174,11 @@ function NavBar({ isLoggedIn, setIsLoggedIn }) {
           border-radius: 8px;
           transition: background 0.2s ease;
         }
+
         .profile-btn:hover {
           background: #f5f5f5;
         }
+
         .avatar-circle {
           width: 36px;
           height: 36px;
@@ -216,6 +191,7 @@ function NavBar({ isLoggedIn, setIsLoggedIn }) {
           font-size: 15px;
           color: #333;
         }
+
         .dropdown-item-btn {
           background: none;
           border: none;
@@ -228,20 +204,50 @@ function NavBar({ isLoggedIn, setIsLoggedIn }) {
           cursor: pointer;
           transition: background 0.2s ease;
         }
+
         .dropdown-item-btn:hover {
           background: #f5f5f5;
         }
+
         .dropdown-card {
+          position: absolute;
+          top: 120%;
+          right: 0;
+          width: 260px;
+          z-index: 2000;
+          border-radius: 10px;
+          background: #fff;
+          box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+          overflow: hidden;
           animation: fadeIn 0.15s ease-out;
         }
+
         @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(-5px);
+          from { opacity: 0; transform: translateY(-5px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+          .nav-buttons-wrapper .nav-btn {
+            min-width: 90px;
+            padding: 6px 10px;
+            font-size: 14px;
           }
-          to {
-            opacity: 1;
-            transform: translateY(0);
+
+          .profile-btn span {
+            display: none; /* hide username on small screens */
+          }
+        }
+
+        @media (max-width: 480px) {
+          .nav-buttons-wrapper {
+            flex-wrap: wrap;
+            gap: 4px;
+          }
+
+          .nav-buttons-wrapper .nav-btn {
+            flex: 1 1 100px;
           }
         }
       `}</style>
