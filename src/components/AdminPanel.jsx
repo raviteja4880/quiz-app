@@ -1,10 +1,60 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { quizAPI } from "../services/api";
+import {
+  FaCheckCircle,
+  FaExclamationTriangle,
+  FaTimesCircle,
+  FaTrashAlt,
+  FaEdit,
+  FaEye,
+  FaEyeSlash,
+} from "react-icons/fa";
+
+// ✅ Reusable AlertBox component
+const AlertBox = ({ type, message, onClose }) => {
+  const getIcon = () => {
+    switch (type) {
+      case "success":
+        return <FaCheckCircle className="text-success me-2" />;
+      case "error":
+        return <FaTimesCircle className="text-danger me-2" />;
+      case "warning":
+        return <FaExclamationTriangle className="text-warning me-2" />;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div
+      className={`alert alert-${
+        type === "success"
+          ? "success"
+          : type === "error"
+          ? "danger"
+          : "warning"
+      } d-flex align-items-center justify-content-between`}
+      role="alert"
+    >
+      <div className="d-flex align-items-center">
+        {getIcon()}
+        <span>{message}</span>
+      </div>
+      <button
+        type="button"
+        className="btn-close"
+        onClick={onClose}
+        aria-label="Close"
+      ></button>
+    </div>
+  );
+};
 
 function AdminPanel() {
   const navigate = useNavigate();
 
+  // Quiz form states
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [timeLimit, setTimeLimit] = useState("");
@@ -12,32 +62,43 @@ function AdminPanel() {
   const [options, setOptions] = useState(["", "", "", ""]);
   const [correctAnswer, setCorrectAnswer] = useState(0);
 
+  // App states
   const [questionsList, setQuestionsList] = useState([]);
   const [quizzes, setQuizzes] = useState([]);
   const [editingQuiz, setEditingQuiz] = useState(null);
-  const [showQuestions, setShowQuestions] = useState(false);
   const [editingQuestionIndex, setEditingQuestionIndex] = useState(null);
+  const [showQuestions, setShowQuestions] = useState(false);
+
+  // Alert state
+  const [alert, setAlert] = useState({ show: false, type: "", message: "" });
+
+  const showAlert = (type, message) => {
+    setAlert({ show: true, type, message });
+    setTimeout(() => setAlert({ show: false, type: "", message: "" }), 3000);
+  };
+
+  const fetchQuizzes = useCallback(async () => {
+  try {
+    const res = await quizAPI.getAll();
+    setQuizzes(res.data);
+  } catch (err) {
+    console.error("Error fetching quizzes:", err);
+    showAlert("error", "Failed to load quizzes. Please try again.");
+  }
+  },[]);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user || user.role !== "admin") {
       navigate("/login");
+    } else {
+      fetchQuizzes();
     }
-    fetchQuizzes();
-  }, [navigate]); // ✅ include navigate
-
-  const fetchQuizzes = async () => {
-    try {
-      const res = await quizAPI.getAll();
-      setQuizzes(res.data);
-    } catch (err) {
-      console.error("Error fetching quizzes:", err);
-    }
-  };
+  }, [navigate,fetchQuizzes]);
 
   const addOrUpdateQuestion = () => {
     if (!question.trim() || options.some((opt) => !opt.trim())) {
-      alert("Please fill in the question and all options.");
+      showAlert("warning", "Please fill in the question and all options.");
       return;
     }
 
@@ -47,9 +108,11 @@ function AdminPanel() {
       const updatedList = [...questionsList];
       updatedList[editingQuestionIndex] = newQuestion;
       setQuestionsList(updatedList);
+      showAlert("success", "Question updated successfully!");
       setEditingQuestionIndex(null);
     } else {
       setQuestionsList([...questionsList, newQuestion]);
+      showAlert("success", "Question added successfully!");
     }
 
     setQuestion("");
@@ -59,37 +122,61 @@ function AdminPanel() {
 
   const createOrUpdateQuiz = async () => {
     if (!title.trim() || !description.trim() || !timeLimit) {
-      alert("Please fill in all quiz details.");
+      showAlert("warning", "Please fill in all quiz details.");
       return;
     }
     if (questionsList.length === 0) {
-      alert("Please add at least one question before saving.");
+      showAlert("warning", "Please add at least one question before saving.");
       return;
     }
 
-    try {
-      const quizData = {
-        title,
-        description,
-        timeLimit: Number(timeLimit),
-        questions: questionsList,
-      };
+    const quizData = {
+      title,
+      description,
+      timeLimit: Number(timeLimit),
+      questions: questionsList,
+    };
 
+    try {
       if (editingQuiz) {
         await quizAPI.update(editingQuiz._id, quizData);
-        alert("✅ Quiz updated successfully");
-        setEditingQuiz(null);
+        showAlert("success", "Quiz updated successfully!");
       } else {
         await quizAPI.create(quizData);
-        alert("✅ Quiz created successfully");
+        showAlert("success", "Quiz created successfully!");
       }
-
       resetForm();
       fetchQuizzes();
     } catch (err) {
-      console.error("Quiz save failed", err);
-      alert("❌ Failed to save quiz");
+      console.error("Quiz save failed:", err);
+      showAlert("error", "Failed to save quiz. Check the data or try again.");
     }
+  };
+
+  const deleteQuiz = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this quiz?")) return;
+    try {
+      await quizAPI.deleteQuiz(id);
+      showAlert("success", "Quiz deleted successfully!");
+      fetchQuizzes();
+    } catch (err) {
+      console.error("Error deleting quiz:", err);
+      showAlert("error", "Failed to delete quiz.");
+    }
+  };
+
+  const editQuestion = (index) => {
+    const q = questionsList[index];
+    setQuestion(q.question);
+    setOptions(q.options);
+    setCorrectAnswer(q.correctAnswer);
+    setEditingQuestionIndex(index);
+  };
+
+  const deleteQuestion = (index) => {
+    if (!window.confirm("Delete this question?")) return;
+    setQuestionsList(questionsList.filter((_, i) => i !== index));
+    showAlert("success", "Question deleted.");
   };
 
   const resetForm = () => {
@@ -105,33 +192,16 @@ function AdminPanel() {
     setShowQuestions(false);
   };
 
-  const deleteQuiz = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this quiz?")) return;
-    try {
-      await quizAPI.deleteQuiz(id);
-      alert("Quiz deleted");
-      fetchQuizzes();
-    } catch (err) {
-      console.error("Error deleting quiz:", err);
-      alert("❌ Failed to delete quiz");
-    }
-  };
-
-  const editQuestion = (index) => {
-    const q = questionsList[index];
-    setQuestion(q.question);
-    setOptions(q.options);
-    setCorrectAnswer(q.correctAnswer);
-    setEditingQuestionIndex(index);
-  };
-
-  const deleteQuestion = (index) => {
-    if (!window.confirm("Delete this question?")) return;
-    setQuestionsList(questionsList.filter((_, i) => i !== index));
-  };
-
   return (
     <div className="container mt-4">
+      {alert.show && (
+        <AlertBox
+          type={alert.type}
+          message={alert.message}
+          onClose={() => setAlert({ show: false })}
+        />
+      )}
+
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>{editingQuiz ? "Edit Quiz" : "Admin Panel - Create Quiz"}</h2>
       </div>
@@ -168,6 +238,7 @@ function AdminPanel() {
         value={question}
         onChange={(e) => setQuestion(e.target.value)}
       />
+
       {options.map((opt, idx) => (
         <input
           key={idx}
@@ -182,6 +253,7 @@ function AdminPanel() {
           }}
         />
       ))}
+
       <select
         className="form-select mb-3"
         value={correctAnswer}
@@ -192,25 +264,37 @@ function AdminPanel() {
         <option value={2}>Option 3</option>
         <option value={3}>Option 4</option>
       </select>
+
       <button className="btn btn-secondary mb-3" onClick={addOrUpdateQuestion}>
         {editingQuestionIndex !== null ? "Update Question" : "Add Question"}
       </button>
 
       <h6>{questionsList.length} Questions Added</h6>
+
       <button className="btn btn-primary" onClick={createOrUpdateQuiz}>
         {editingQuiz ? "Update Quiz" : "Create Quiz"}
       </button>
+
       {editingQuiz && (
         <button className="btn btn-warning ms-2" onClick={resetForm}>
           Cancel Edit
         </button>
       )}
+
       {questionsList.length > 0 && (
         <button
           className="btn btn-info ms-2"
           onClick={() => setShowQuestions(!showQuestions)}
         >
-          {showQuestions ? "Hide Questions" : "View Questions"}
+          {showQuestions ? (
+            <>
+              <FaEyeSlash className="me-1" /> Hide Questions
+            </>
+          ) : (
+            <>
+              <FaEye className="me-1" /> View Questions
+            </>
+          )}
         </button>
       )}
 
@@ -234,13 +318,13 @@ function AdminPanel() {
                     className="btn btn-sm btn-info me-2"
                     onClick={() => editQuestion(idx)}
                   >
-                    Edit
+                    <FaEdit className="me-1" /> Edit
                   </button>
                   <button
                     className="btn btn-sm btn-danger"
                     onClick={() => deleteQuestion(idx)}
                   >
-                    Delete
+                    <FaTrashAlt className="me-1" /> Delete
                   </button>
                 </div>
               </li>
@@ -258,20 +342,21 @@ function AdminPanel() {
             className="list-group-item d-flex justify-content-between align-items-center"
           >
             <div>
-              <strong>{quiz.title}</strong> — {quiz.description} ({quiz.timeLimit} mins)
+              <strong>{quiz.title}</strong> — {quiz.description} (
+              {quiz.timeLimit} mins)
             </div>
             <div>
               <button
                 className="btn btn-sm btn-info me-2"
                 onClick={() => navigate(`/quiz/edit/${quiz._id}`)}
               >
-                Edit
+                <FaEdit className="me-1" /> Edit
               </button>
               <button
                 className="btn btn-danger btn-sm"
                 onClick={() => deleteQuiz(quiz._id)}
               >
-                Delete
+                <FaTrashAlt className="me-1" /> Delete
               </button>
             </div>
           </li>

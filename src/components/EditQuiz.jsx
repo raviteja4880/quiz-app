@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { quizAPI } from "../services/api";
-import Loader from "./Loader"; 
+import Loader from "./Loader";
+import { FaCheckCircle, FaExclamationCircle, FaTrash, FaPlusCircle } from "react-icons/fa";
 
 function EditQuiz() {
   const { id } = useParams();
@@ -24,8 +25,8 @@ function EditQuiz() {
         setQuiz(data);
         setError("");
       } catch (err) {
-        console.error("❌ Failed to load quiz:", err.response?.data || err.message);
-        setError("❌ Failed to load quiz for editing");
+        console.error("Failed to load quiz:", err.response?.data || err.message);
+        setError("Failed to load quiz for editing");
       } finally {
         setLoading(false);
       }
@@ -57,17 +58,15 @@ function EditQuiz() {
     setQuiz({ ...quiz, questions: updated });
   };
 
-  // ✅ Add new question
   const addQuestion = () => {
     const newQuestion = {
       question: "",
-      options: ["", "", "", ""], 
+      options: ["", "", "", ""],
       correctAnswer: 0,
     };
     setQuiz({ ...quiz, questions: [...quiz.questions, newQuestion] });
   };
 
-  // ✅ Delete question
   const deleteQuestion = (index) => {
     if (!window.confirm("Delete this question?")) return;
     const updated = quiz.questions.filter((_, i) => i !== index);
@@ -78,16 +77,22 @@ function EditQuiz() {
     e.preventDefault();
     try {
       await quizAPI.update(id, quiz);
-      alert("✅ Quiz updated successfully!");
+      alert("Quiz updated successfully!");
       navigate("/admin");
     } catch (err) {
-      console.error("❌ Update failed:", err.response?.data || err.message);
-      setError("❌ Failed to update quiz");
+      console.error("Update failed:", err.response?.data || err.message);
+      setError("Failed to update quiz");
     }
   };
 
   if (loading) return <Loader />;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  if (error)
+    return (
+      <p style={{ color: "red" }}>
+        <FaExclamationCircle className="me-2" />
+        {error}
+      </p>
+    );
 
   return (
     <div className="container mt-4">
@@ -174,6 +179,7 @@ function EditQuiz() {
               className="btn btn-danger"
               onClick={() => deleteQuestion(i)}
             >
+              <FaTrash className="me-2" />
               Delete Question
             </button>
           </div>
@@ -184,13 +190,15 @@ function EditQuiz() {
           className="btn btn-secondary mb-3"
           onClick={addQuestion}
         >
-         Add Question
+          <FaPlusCircle className="me-2" />
+          Add Question
         </button>
 
         <br />
 
         <button type="submit" className="btn btn-success">
-         Update Quiz
+          <FaCheckCircle className="me-2" />
+          Update Quiz
         </button>
         <button
           type="button"

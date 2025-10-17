@@ -2,6 +2,13 @@ import React, { useState, useEffect } from "react";
 import { resultAPI } from "../services/api";
 import { Link } from "react-router-dom";
 import Loader from "./Loader";
+import {
+  FaSearch,
+  FaExclamationTriangle,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaInfoCircle,
+} from "react-icons/fa";
 
 function SearchResults() {
   const [email, setEmail] = useState(localStorage.getItem("lastEmail") || "");
@@ -19,7 +26,7 @@ function SearchResults() {
 
   const handleSearch = async () => {
     if (!email.trim()) {
-      setMessage("⚠️ Please enter a user email");
+      setMessage("warning_empty_email");
       setResults([]);
       return;
     }
@@ -30,7 +37,7 @@ function SearchResults() {
     try {
       const { data } = await resultAPI.getByEmail(email);
       if (!data || data.length === 0) {
-        setMessage("✅ User exists but has no quiz results yet.");
+        setMessage("success_no_results");
         setResults([]);
       } else {
         setResults(data);
@@ -38,9 +45,9 @@ function SearchResults() {
       }
     } catch (err) {
       if (err.response?.status === 404) {
-        setMessage("❌ User not found");
+        setMessage("error_user_not_found");
       } else {
-        setMessage("⚠️ Could not fetch results. Please try again later.");
+        setMessage("warning_fetch_failed");
       }
       setResults([]);
     } finally {
@@ -48,14 +55,51 @@ function SearchResults() {
     }
   };
 
-  // ✅ FIX: Handle loading before returning main JSX
   if (loading) {
     return <Loader />;
   }
 
+  const renderMessage = () => {
+    switch (message) {
+      case "warning_empty_email":
+        return (
+          <div className="alert alert-warning text-center">
+            <FaExclamationTriangle className="me-2" />
+            Please enter a user email
+          </div>
+        );
+      case "success_no_results":
+        return (
+          <div className="alert alert-success text-center">
+            <FaCheckCircle className="me-2" />
+            User exists but has no quiz results yet.
+          </div>
+        );
+      case "error_user_not_found":
+        return (
+          <div className="alert alert-danger text-center">
+            <FaTimesCircle className="me-2" />
+            User not found
+          </div>
+        );
+      case "warning_fetch_failed":
+        return (
+          <div className="alert alert-warning text-center">
+            <FaInfoCircle className="me-2" />
+            Could not fetch results. Please try again later.
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="container my-4">
-      <h2 className="mb-3">🔎 Search User Results</h2>
+      <h2 className="mb-3">
+        <FaSearch className="me-2" />
+        Search User Results
+      </h2>
 
       {/* Search Bar */}
       <div className="input-group mb-3">
@@ -67,14 +111,13 @@ function SearchResults() {
           onChange={(e) => setEmail(e.target.value)}
         />
         <button className="btn btn-info" onClick={handleSearch}>
+          <FaSearch className="me-1" />
           Search
         </button>
       </div>
 
       {/* Message */}
-      {message && (
-        <div className="alert alert-warning text-center">{message}</div>
-      )}
+      {renderMessage()}
 
       {/* Results Table */}
       {results.length > 0 && (
@@ -94,7 +137,9 @@ function SearchResults() {
               {results.map((r, idx) => (
                 <tr key={r.resultId || idx}>
                   <td>{r.quizTitle}</td>
-                  <td>{r.score} / {r.total}</td>
+                  <td>
+                    {r.score} / {r.total}
+                  </td>
                   <td>{r.percentage?.toFixed(2)}%</td>
                   <td
                     className={

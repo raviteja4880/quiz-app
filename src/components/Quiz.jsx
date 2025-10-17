@@ -18,6 +18,7 @@ function Quiz() {
 
   const [quiz, setQuiz] = useState(null);
   const [answers, setAnswers] = useState([]);
+  const [visited, setVisited] = useState([]); // NEW: track visited questions
   const [currentQ, setCurrentQ] = useState(0);
   const [started, setStarted] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
@@ -46,6 +47,7 @@ function Quiz() {
           data = res.data;
           setTimeLeft(data.timeLimit * 60);
           setAnswers(new Array(data.questions.length).fill(null));
+          setVisited(new Array(data.questions.length).fill(false)); // Initialize visited
         }
         setQuiz(data);
       } catch (err) {
@@ -147,11 +149,21 @@ function Quiz() {
   };
 
   const handleNext = () => {
+    setVisited((prev) => {
+      const newVisited = [...prev];
+      newVisited[currentQ] = true;
+      return newVisited;
+    });
     if (currentQ < quiz.questions.length - 1) setCurrentQ(currentQ + 1);
     else handleSubmit();
   };
 
   const handlePrev = () => {
+    setVisited((prev) => {
+      const newVisited = [...prev];
+      newVisited[currentQ] = true;
+      return newVisited;
+    });
     if (currentQ > 0) setCurrentQ(currentQ - 1);
   };
 
@@ -310,7 +322,7 @@ function Quiz() {
                       borderRadius: "4px",
                     }}
                   ></span>
-                  Currently Viewing
+                  Currently Viewing / Visited
                 </li>
                 <li className="d-flex align-items-center mb-1">
                   <span
@@ -392,9 +404,10 @@ function Quiz() {
           }}
         >
           {quiz.questions.map((_, index) => {
-            let btnClass = "btn btn-secondary btn-sm";
-            if (answers[index] !== null) btnClass = "btn btn-success btn-sm";
-            if (currentQ === index) btnClass = "btn btn-danger btn-sm text-white";
+            let btnClass = "btn btn-secondary btn-sm"; // default
+            if (answers[index] !== null) btnClass = "btn btn-success btn-sm"; // answered
+            else if (visited[index]) btnClass = "btn btn-danger btn-sm text-white"; // visited but not answered
+            else if (currentQ === index) btnClass = "btn btn-danger btn-sm text-white"; // current
             return (
               <button
                 key={index}
@@ -404,7 +417,14 @@ function Quiz() {
                   fontWeight: "600",
                   borderRadius: "8px",
                 }}
-                onClick={() => setCurrentQ(index)}
+                onClick={() => {
+                  setCurrentQ(index);
+                  setVisited((prev) => {
+                    const newVisited = [...prev];
+                    newVisited[index] = true;
+                    return newVisited;
+                  });
+                }}
               >
                 {index + 1}
               </button>
