@@ -8,6 +8,10 @@ import {
   FaPlayCircle,
   FaGithub,
   FaLinkedin,
+  FaUserGraduate,
+  FaBolt,
+  FaLaptopCode,
+  FaEnvelope,
 } from "react-icons/fa";
 
 function Home() {
@@ -69,7 +73,7 @@ function Home() {
       {/* 🔹 Fullscreen Hero Section */}
       <section
         className="d-flex flex-column justify-content-center align-items-center text-center px-3"
-        style={{ minHeight: "100vh", paddingBottom: "3rem" }} // added extra bottom padding for spacing before footer
+        style={{ minHeight: "100vh", paddingBottom: "3rem" }}
       >
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -85,7 +89,8 @@ function Home() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="display-4 mb-3 fw-bold text-dark"
           >
-            🎓 Welcome {user?.name ? user.name : "Guest"}!
+            <FaUserGraduate className="me-2 text-warning" />
+            Welcome {user?.name ? user.name : "Guest"}!
           </motion.h1>
 
           {/* Hero Subtitle */}
@@ -137,12 +142,12 @@ function Home() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 1.2 }}
-            className="d-flex justify-content-center gap-3 flex-wrap mb-5" // added mb-5 for spacing from footer
+            className="d-flex justify-content-center gap-3 flex-wrap mb-5"
           >
             <Link
               to="/quizlist"
               className="btn btn-dark btn-lg px-5 py-3 shadow-sm rounded-pill"
-              style={{ minWidth: "220px" }} // ensures proper alignment on mobile
+              style={{ minWidth: "220px" }}
             >
               View All Quizzes
             </Link>
@@ -157,7 +162,7 @@ function Home() {
           background: "linear-gradient(135deg, #fbb583ff 0%, #bb8c75ff 100%)",
         }}
       >
-        <div className="container text-center pt-4"> {/* Added pt-4 for spacing above footer content */}
+        <div className="container text-center pt-4">
           <h5 className="fw-bold mb-2">QuizApp</h5>
           <p className="mb-4 text-muted">
             Interactive quizzes to test knowledge, track progress, and improve
@@ -264,10 +269,10 @@ function Home() {
                   test your skills with expert-curated quizzes.
                 </p>
                 <ul className="text-muted small mb-3">
-                  <li>📌 Roles: User & Admin</li>
-                  <li>📊 Features: Quizzes, Results, Performance Tracking</li>
-                  <li>⚡ Tech: React, Node.js, MongoDB</li>
-                  <li>👨‍💻 Developer: Ravi Teja Kandula</li>
+                  <li><FaUserGraduate className="me-1" /> Roles: User & Admin</li>
+                  <li><FaChartLine className="me-1" /> Features: Quizzes, Results, Performance Tracking</li>
+                  <li><FaLaptopCode className="me-1" /> Tech: React, Node.js, MongoDB</li>
+                  <li><FaBolt className="me-1" /> Developer: Ravi Teja Kandula</li>
                 </ul>
                 <button
                   className="btn btn-dark w-100"
@@ -299,24 +304,30 @@ function Home() {
                   action="https://formspree.io/f/mwpnevjj"
                   method="POST"
                 >
-                  <input
-                    type="text"
-                    name="name"
-                    placeholder="Your Name 📛"
-                    required
-                    className="form-control mb-2"
-                  />
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="Your Email 📩"
-                    required
-                    className="form-control mb-2"
-                  />
+                  <div className="input-group mb-2">
+                    <span className="input-group-text"><FaUserGraduate /></span>
+                    <input
+                      type="text"
+                      name="name"
+                      placeholder="Your Name"
+                      required
+                      className="form-control"
+                    />
+                  </div>
+                  <div className="input-group mb-2">
+                    <span className="input-group-text"><FaEnvelope /></span>
+                    <input
+                      type="email"
+                      name="email"
+                      placeholder="Your Email"
+                      required
+                      className="form-control"
+                    />
+                  </div>
                   <textarea
                     name="message"
                     rows="4"
-                    placeholder="Your Message 🗨️"
+                    placeholder="Your Message"
                     required
                     className="form-control mb-2"
                   ></textarea>

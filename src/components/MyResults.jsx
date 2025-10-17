@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { resultAPI } from "../services/api";
 import Loader from "./Loader";
+import { FaCheckCircle, FaTimesCircle } from "react-icons/fa"; // ✅ Added Font Awesome icons
 
 function MyResults() {
   const [results, setResults] = useState([]);
@@ -51,8 +52,14 @@ function MyResults() {
                 <th>Quiz Title</th>
                 <th>Score</th>
                 <th>Percentage</th>
-                <th>✅ Correct</th>
-                <th>❌ Wrong</th>
+                <th>
+                  <FaCheckCircle className="text-success me-1" />
+                  Correct
+                </th>
+                <th>
+                  <FaTimesCircle className="text-danger me-1" />
+                  Wrong
+                </th>
                 <th>Status</th>
                 <th>Submitted At</th>
                 <th>Action</th>
@@ -62,7 +69,9 @@ function MyResults() {
               {results.map((r) => (
                 <tr key={r.resultId || r._id}>
                   <td>{r.quizTitle || "Untitled Quiz"}</td>
-                  <td>{r.score} / {r.total}</td>
+                  <td>
+                    {r.score} / {r.total}
+                  </td>
                   <td>{Number(r.percentage).toFixed(2)}%</td>
                   <td className="text-success fw-semibold">{r.correctCount}</td>
                   <td className="text-danger fw-semibold">{r.wrongCount}</td>
@@ -79,7 +88,11 @@ function MyResults() {
                         : "—"}
                     </span>
                   </td>
-                  <td>{r.submittedAt ? new Date(r.submittedAt).toLocaleString() : "—"}</td>
+                  <td>
+                    {r.submittedAt
+                      ? new Date(r.submittedAt).toLocaleString()
+                      : "—"}
+                  </td>
                   <td>
                     <Link
                       to={`/quiz/${r.quizId}/review/${r.resultId || r._id}`}

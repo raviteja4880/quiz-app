@@ -2,6 +2,16 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { quizAPI } from "../services/api";
 import Loader from "./Loader";
+import {
+  FaCheckCircle,
+  FaTimesCircle,
+  FaInfoCircle,
+  FaBook,
+  FaClock,
+  FaSmileBeam,
+  FaFrown,
+  FaExclamationTriangle,
+} from "react-icons/fa";
 
 function Quiz() {
   const { id, resultId } = useParams();
@@ -77,9 +87,9 @@ function Quiz() {
         userAnswers: answers,
       });
 
-      alert("✅ Quiz submitted successfully!");
+      alert("Quiz submitted successfully!");
     } catch (err) {
-      alert(`❌ Failed to submit quiz: ${err.response?.data?.message || err.message}`);
+      alert(`Failed to submit quiz: ${err.response?.data?.message || err.message}`);
     } finally {
       setSubmitting(false);
     }
@@ -105,7 +115,7 @@ function Quiz() {
   useEffect(() => {
     if (exitCount >= 3 && started && !result && !reviewMode && !exitLocked) {
       setExitLocked(true);
-      alert("❌ You exited fullscreen too many times. Exam ended.");
+      alert("You exited fullscreen too many times. Exam ended.");
       handleSubmit();
     }
   }, [exitCount, started, result, reviewMode, exitLocked, handleSubmit]);
@@ -153,12 +163,17 @@ function Quiz() {
     if (reviewMode) {
       return (
         <div className="container my-5">
-          <h2 className="text-center mb-4">📘 Quiz Review</h2>
+          <h2 className="text-center mb-4">
+            <FaBook className="text-primary me-2" />
+            Quiz Review
+          </h2>
           <h4 className="text-center mb-3">
             Score: {result.score} / {result.total}
           </h4>
           <p className="text-center mb-4">
-            ✔ Correct: {result.correctCount} | ❌ Wrong: {result.wrongCount} | ⚪ Not Answered:{" "}
+            <FaCheckCircle className="text-success me-1" /> Correct: {result.correctCount} |{" "}
+            <FaTimesCircle className="text-danger me-1" /> Wrong: {result.wrongCount} |{" "}
+            <FaInfoCircle className="text-secondary me-1" /> Not Answered:{" "}
             {quiz.questions.length - (result.correctCount + result.wrongCount)}
           </p>
 
@@ -202,30 +217,43 @@ function Quiz() {
       const submittedAt = new Date().toLocaleString();
       const percentage = result.percentage || (result.score / result.total) * 100;
       const isGood = percentage >= 70;
-      const greeting = isGood
-        ? "🎉 Great job! You performed very well!"
-        : "💪 Keep trying! You’ll do better next time.";
+      const greeting = isGood ? (
+        <>
+          <FaSmileBeam className="text-success me-2" />
+          Great job! You performed very well!
+        </>
+      ) : (
+        <>
+          <FaFrown className="text-warning me-2" />
+          Keep trying! You’ll do better next time.
+        </>
+      );
 
       return (
         <div
           className="container my-5 d-flex flex-column align-items-center justify-content-center"
           style={{ minHeight: "80vh" }}
         >
-          <h2 className="text-center mb-3 fw-bold text-success">✅ Exam Submitted Successfully!</h2>
+          <h2 className="text-center mb-3 fw-bold text-success">
+            <FaCheckCircle className="me-2" />
+            Exam Submitted Successfully!
+          </h2>
           <div className="card shadow p-4 text-center" style={{ maxWidth: "500px", width: "100%" }}>
             <h4 className="mb-3">{greeting}</h4>
             <p>
-              ✔ Correct: <b className="text-success">{result.correctCount}</b>
+              <FaCheckCircle className="text-success me-1" /> Correct:{" "}
+              <b className="text-success">{result.correctCount}</b>
             </p>
             <p>
-              ❌ Wrong: <b className="text-danger">{result.wrongCount}</b>
+              <FaTimesCircle className="text-danger me-1" /> Wrong:{" "}
+              <b className="text-danger">{result.wrongCount}</b>
             </p>
             <p>
-              ⚪ Not Answered:{" "}
+              <FaInfoCircle className="text-secondary me-1" /> Not Answered:{" "}
               <b>{quiz.questions.length - (result.correctCount + result.wrongCount)}</b>
             </p>
             <p className="text-muted">
-              🕒 Submitted at: <b>{submittedAt}</b>
+              <FaClock className="me-1" /> Submitted at: <b>{submittedAt}</b>
             </p>
             <Link to="/myResults" className="btn btn-primary btn-lg">
               Back to My Results
@@ -344,7 +372,8 @@ function Quiz() {
           className="position-fixed top-0 start-50 translate-middle-x mt-3 alert alert-warning shadow"
           style={{ zIndex: 9999 }}
         >
-          ⚠ Fullscreen exited — Please re-enter to start
+          <FaExclamationTriangle className="me-2" />
+          Fullscreen exited — Please re-enter to start
           <button className="btn btn-sm btn-warning ms-2" onClick={handleReEnterFullscreen}>
             Re-enter Fullscreen
           </button>
@@ -352,7 +381,7 @@ function Quiz() {
       )}
 
       {/* ---------- Question Palette (Multi-row Grid) ---------- */}
-      <div className="d-flex justify-content-center mb-3">
+      <div className="d-flex justify-content-center mb-3 mt-4">
         <div
           className="card p-3 shadow-sm bg-white"
           style={{
@@ -415,15 +444,8 @@ function Quiz() {
             </div>
           ))}
 
-          <button
-            className="btn btn-outline-danger btn-sm mt-3"
-            onClick={() => handleClearResponse(currentQ)}
-            disabled={answers[currentQ] === null}
-          >
-            Clear Response
-          </button>
-
-          <div className="d-flex justify-content-between mt-4 flex-wrap gap-2">
+          {/* Button alignment fix */}
+          <div className="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-2">
             <button
               className="btn btn-outline-secondary"
               disabled={currentQ === 0}
@@ -431,13 +453,23 @@ function Quiz() {
             >
               Previous
             </button>
-            <button
-              className="btn btn-primary"
-              onClick={handleNext}
-              disabled={answers[currentQ] === null}
-            >
-              {currentQ < quiz.questions.length - 1 ? "Next" : "Submit"}
-            </button>
+
+            <div className="d-flex align-items-center gap-2 ms-auto">
+              <button
+                className="btn btn-outline-danger btn-sm"
+                onClick={() => handleClearResponse(currentQ)}
+                disabled={answers[currentQ] === null}
+              >
+                Clear Response
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleNext}
+                disabled={answers[currentQ] === null}
+              >
+                {currentQ < quiz.questions.length - 1 ? "Next" : "Submit"}
+              </button>
+            </div>
           </div>
         </div>
       </div>

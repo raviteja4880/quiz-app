@@ -2,6 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { quizAPI } from "../services/api";
 import Loader from "./Loader";
+import {
+  FaCheckCircle,
+  FaTimesCircle,
+  FaCalendarAlt,
+  FaExclamationCircle,
+} from "react-icons/fa";
 
 function Result() {
   const { resultId } = useParams();
@@ -24,7 +30,12 @@ function Result() {
   }, [resultId]);
 
   if (loading) return <Loader />;
-  if (!quizData) return <p className="text-center mt-5">❌ No result found</p>;
+  if (!quizData)
+    return (
+      <p className="text-center mt-5 text-danger">
+        <FaTimesCircle className="me-2" /> No result found
+      </p>
+    );
 
   const { title, questions, result } = quizData;
 
@@ -49,11 +60,13 @@ function Result() {
           </h4>
           <p className="mb-2">Percentage: {result?.percentage?.toFixed(2)}%</p>
           <p className="mb-3">
-            ✅ Correct: {result?.correctCount} &nbsp; | &nbsp; ❌ Wrong:{" "}
+            <FaCheckCircle className="text-success me-2" /> Correct:{" "}
+            {result?.correctCount} &nbsp; | &nbsp;
+            <FaTimesCircle className="text-danger me-2" /> Wrong:{" "}
             {result?.wrongCount}
           </p>
           <p className="small">
-            📅 Submitted:{" "}
+            <FaCalendarAlt className="me-2" /> Submitted:{" "}
             {result?.submittedAt
               ? new Date(result.submittedAt).toLocaleString()
               : "—"}
@@ -80,17 +93,17 @@ function Result() {
                 const isUser = j === userIndex;
 
                 let bgClass = "bg-light";
-                let icon = "";
+                let icon = null;
 
                 if (isCorrect && isUser) {
                   bgClass = "bg-success text-white";
-                  icon = "✔";
+                  icon = <FaCheckCircle />;
                 } else if (isCorrect) {
                   bgClass = "bg-success text-white";
-                  icon = "✔";
+                  icon = <FaCheckCircle />;
                 } else if (isUser && !isCorrect) {
                   bgClass = "bg-danger text-white";
-                  icon = "❌";
+                  icon = <FaTimesCircle />;
                 }
 
                 return (
@@ -105,8 +118,8 @@ function Result() {
               })}
 
               {userIndex === null || userIndex === undefined ? (
-                <div className="p-2 rounded bg-secondary text-white mt-2">
-                  (Not Answered)
+                <div className="p-2 rounded bg-secondary text-white mt-2 d-flex align-items-center">
+                  <FaExclamationCircle className="me-2" /> (Not Answered)
                 </div>
               ) : null}
             </div>

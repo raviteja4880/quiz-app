@@ -2,7 +2,14 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { authAPI } from "../services/api";
-import { FaBullseye, FaChartBar, FaUserShield, FaClock } from "react-icons/fa";
+import {
+  FaBullseye,
+  FaChartBar,
+  FaUserShield,
+  FaClock,
+  FaGraduationCap,
+  FaStar,
+} from "react-icons/fa";
 
 function LandingPage({ setIsLoggedIn }) {
   const [isFlipped, setIsFlipped] = useState(false); // Default to login
@@ -106,7 +113,8 @@ function LandingPage({ setIsLoggedIn }) {
           style={{ maxWidth: "550px" }}
         >
           <h1 className="fw-bold display-6 display-md-5 mb-3">
-            Welcome to <span style={{ color: "#ffe082" }}>QuizApp</span> 🎓
+            Welcome to <span style={{ color: "#ffe082" }}>QuizApp</span>{" "}
+            <FaGraduationCap className="text-warning mb-1" />
           </h1>
           <p className="fs-6 fs-md-5 mb-4" style={{ lineHeight: "1.6" }}>
             A fun, engaging, and smart quiz platform where you can test your
@@ -118,13 +126,27 @@ function LandingPage({ setIsLoggedIn }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
           >
-            <h5 className="fw-semibold mb-3">✨ Key Features</h5>
+            <h5 className="fw-semibold mb-3">
+              <FaStar className="text-warning me-2 mb-1" /> Key Features
+            </h5>
             <ul className="text-light list-unstyled fs-6 fs-md-5">
               {[
-                { icon: <FaBullseye className="text-warning" />, text: "Interactive quizzes with instant feedback" },
-                { icon: <FaChartBar className="text-warning" />, text: "Track your progress and scores" },
-                { icon: <FaUserShield className="text-warning" />, text: "Role-based access for Admins & Students" },
-                { icon: <FaClock className="text-warning" />, text: "Timed challenges and topic-wise quizzes" },
+                {
+                  icon: <FaBullseye className="text-warning" />,
+                  text: "Interactive quizzes with instant feedback",
+                },
+                {
+                  icon: <FaChartBar className="text-warning" />,
+                  text: "Track your progress and scores",
+                },
+                {
+                  icon: <FaUserShield className="text-warning" />,
+                  text: "Role-based access for Admins & Students",
+                },
+                {
+                  icon: <FaClock className="text-warning" />,
+                  text: "Timed challenges and topic-wise quizzes",
+                },
               ].map((item, idx) => (
                 <li
                   key={idx}
@@ -177,14 +199,18 @@ function LandingPage({ setIsLoggedIn }) {
                 <div className="d-flex justify-content-center mb-4 flex-wrap gap-2">
                   <button
                     type="button"
-                    className={`btn ${role === "user" ? "btn-primary" : "btn-outline-light"}`}
+                    className={`btn ${
+                      role === "user" ? "btn-primary" : "btn-outline-light"
+                    }`}
                     onClick={() => setRole("user")}
                   >
                     User
                   </button>
                   <button
                     type="button"
-                    className={`btn ${role === "admin" ? "btn-success" : "btn-outline-light"}`}
+                    className={`btn ${
+                      role === "admin" ? "btn-success" : "btn-outline-light"
+                    }`}
                     onClick={() => setRole("admin")}
                   >
                     Admin
@@ -239,16 +265,19 @@ function LandingPage({ setIsLoggedIn }) {
                   </motion.button>
                 </form>
 
-                <p className="mt-3 text-center">
-                  Don’t have an account?{" "}
-                  <button
-                    type="button"
-                    className="btn btn-link text-warning fw-bold p-0"
-                    onClick={() => setIsFlipped(true)}
-                  >
-                    Sign up
-                  </button>
-                </p>
+                {/* Hide Sign up link for Admin */}
+                {role === "user" && (
+                  <p className="mt-3 text-center">
+                    Don’t have an account?{" "}
+                    <button
+                      type="button"
+                      className="btn btn-link text-warning fw-bold p-0"
+                      onClick={() => setIsFlipped(true)}
+                    >
+                      Sign up
+                    </button>
+                  </p>
+                )}
               </motion.div>
             ) : (
               <motion.div
@@ -265,14 +294,18 @@ function LandingPage({ setIsLoggedIn }) {
                 <div className="d-flex justify-content-center mb-4 flex-wrap gap-2">
                   <button
                     type="button"
-                    className={`btn ${role === "user" ? "btn-primary" : "btn-outline-light"}`}
+                    className={`btn ${
+                      role === "user" ? "btn-primary" : "btn-outline-light"
+                    }`}
                     onClick={() => setRole("user")}
                   >
                     User
                   </button>
                   <button
                     type="button"
-                    className={`btn ${role === "admin" ? "btn-success" : "btn-outline-light"}`}
+                    className={`btn ${
+                      role === "admin" ? "btn-success" : "btn-outline-light"
+                    }`}
                     onClick={() => setRole("admin")}
                   >
                     Admin
