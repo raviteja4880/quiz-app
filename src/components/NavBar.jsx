@@ -36,12 +36,12 @@ function NavBar({ isLoggedIn, setIsLoggedIn }) {
   }, [showProfileDropdown]);
 
   const handleLogout = () => {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      localStorage.removeItem("isLoggedIn");
-      setIsLoggedIn(false);
-      setShowProfileDropdown(false);
-      navigate("/");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("isLoggedIn");
+    setIsLoggedIn(false);
+    setShowProfileDropdown(false);
+    navigate("/");
   };
 
   if (!isLoggedIn) return null;
@@ -122,7 +122,24 @@ function NavBar({ isLoggedIn, setIsLoggedIn }) {
                   <div className="dropdown-role px-3 py-2">
                     <i className="bi bi-shield-lock me-2"></i> Role: {user?.role}
                   </div>
-                  <button className="dropdown-item-btn text-danger fw-semibold" onClick={handleLogout}>
+
+                  {/* ✅ Dashboard link for users */}
+                  {user?.role === "user" && (
+                    <button
+                      className="dropdown-item-btn fw-semibold"
+                      onClick={() => {
+                        setShowProfileDropdown(false);
+                        navigate("/student-dashboard");
+                      }}
+                    >
+                      <i className="bi bi-speedometer2 me-2"></i> Dashboard
+                    </button>
+                  )}
+
+                  <button
+                    className="dropdown-item-btn text-danger fw-semibold"
+                    onClick={handleLogout}
+                  >
                     <i className="bi bi-box-arrow-right me-2 text-danger"></i> Logout
                   </button>
                 </div>
@@ -149,7 +166,7 @@ function NavBar({ isLoggedIn, setIsLoggedIn }) {
           border-radius: 50px;
           font-weight: 500;
           padding: 8px 18px;
-          min-width: 110px; /* Ensures equal button size */
+          min-width: 110px;
           text-align: center;
           transition: all 0.3s ease;
           text-decoration: none;
@@ -159,7 +176,6 @@ function NavBar({ isLoggedIn, setIsLoggedIn }) {
           background: #eaeaea;
           color: #000;
           text-decoration: none;
-
         }
 
         .nav-buttons-wrapper .nav-btn.active {
@@ -229,16 +245,14 @@ function NavBar({ isLoggedIn, setIsLoggedIn }) {
           to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Responsive Adjustments */
         @media (max-width: 768px) {
           .nav-buttons-wrapper .nav-btn {
             min-width: 90px;
             padding: 6px 10px;
             font-size: 14px;
           }
-
           .profile-btn span {
-            display: none; /* hide username on small screens */
+            display: none;
           }
         }
 
@@ -247,7 +261,6 @@ function NavBar({ isLoggedIn, setIsLoggedIn }) {
             flex-wrap: wrap;
             gap: 4px;
           }
-
           .nav-buttons-wrapper .nav-btn {
             flex: 1 1 100px;
           }

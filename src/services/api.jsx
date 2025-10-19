@@ -38,3 +38,8 @@ export const resultAPI = {
   getMine: () => API.get("/quiz/myresults"),
   getByEmail: (email) => API.get(`/quiz/results/user/${email}`),
 };
+
+export const dashboardAPI = {
+  getPerformanceStats: () => API.get("/quiz/performance/stats"),
+};
+

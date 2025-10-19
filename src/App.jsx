@@ -11,6 +11,7 @@ import NavBar from "./components/NavBar";
 import SearchResults from "./components/SearchResults";
 import EditQuiz from "./components/EditQuiz";
 import LandingPage from "./pages/LandingPage";
+import StudentDashboard from "./components/StudentDashboard";
 
 // ProtectedRoute wrapper
 const ProtectedRoute = ({ isLoggedIn, children }) =>
@@ -42,6 +43,7 @@ function App({ isLoggedIn, setIsLoggedIn }) {
     { path: "/result/:id", element: <Result /> },
     { path: "/results", element: <Result /> },
     { path: "/admin", element: <AdminPanel /> },
+    { path: "/student-dashboard", element: <StudentDashboard /> },
     { path: "/myresults", element: <MyResults /> },
     { path: "/quiz/edit/:id", element: <EditQuiz /> },
     { path: "/search-results", element: <SearchResults /> },
