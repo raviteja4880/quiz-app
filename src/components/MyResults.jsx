@@ -109,8 +109,8 @@ function MyResults() {
       )}
 
       <div className="text-center mt-4">
-        <Link to="/home" className="btn btn-secondary">
-          Back to Home
+        <Link to="/student-dashboard" className="btn btn-secondary">
+          Dashboard
         </Link>
       </div>
     </div>

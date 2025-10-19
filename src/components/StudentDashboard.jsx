@@ -28,11 +28,24 @@ function StudentDashboard() {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
+    const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+
     async function fetchDashboard() {
+      if (!token) {
+        console.error("No token found. User might not be logged in.");
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
-        const res = await axios.get("/api/dashboard/student", {
-          headers: { Authorization: token ? `Bearer ${token}` : "" },
+
+        const res = await axios.get(`${BACKEND_URL}/api/dashboard/student`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          timeout: 5000,
         });
 
         const { heatmap = [], trend = [], summary = {} } = res.data;
@@ -45,7 +58,15 @@ function StudentDashboard() {
         );
         setSummary(summary);
       } catch (err) {
-        console.error("Failed fetching dashboard:", err);
+        if (err.response) {
+          console.error(
+            `Dashboard fetch error: ${err.response.status} — ${err.response.data.message || err.message}`
+          );
+        } else if (err.request) {
+          console.error("No response from backend:", err.request);
+        } else {
+          console.error("Error setting up request:", err.message);
+        }
       } finally {
         setLoading(false);
       }
@@ -67,13 +88,13 @@ function StudentDashboard() {
   };
 
   return (
-    <div className="container py-6 px-3">
-      <h2 className="text-2xl md:text-3xl font-bold text-center mb-6">Student Dashboard</h2>
+    <div className="dashboard-container">
+      <h2 className="dashboard-title">Student Dashboard</h2>
 
-      <div className="dashboard-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+      <div className="dashboard-grid">
         {/* Activity Heatmap */}
         <div className="card">
-          <h3 className="text-xl font-semibold mb-3">Activity Heatmap (last 90 days)</h3>
+          <h3>Activity Heatmap (last 90 days)</h3>
           <CalendarHeatmap
             startDate={startDate}
             endDate={endDate}
@@ -96,7 +117,7 @@ function StudentDashboard() {
 
         {/* Performance Trend */}
         <div className="card">
-          <h3 className="text-xl font-semibold mb-3">Performance Trend</h3>
+          <h3>Performance Trend</h3>
           {trendData.length === 0 ? (
             <div className="py-10 text-center">No score data yet</div>
           ) : (
@@ -123,13 +144,50 @@ function StudentDashboard() {
         </div>
       </div>
 
-      {/* Responsive Styles */}
+      {/* Styles */}
       <style>{`
+        body {
+          background-color: #f5f7fa;
+        }
+
+        .dashboard-container {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 20px;
+          margin-top: 80px; /* Space from fixed navbar */
+        }
+
+        @media (max-width: 768px) {
+          .dashboard-container {
+            margin-top: 60px;
+            padding: 16px;
+          }
+        }
+
+        .dashboard-title {
+          font-size: 2rem;
+          font-weight: 700;
+          text-align: center;
+          margin-bottom: 24px;
+        }
+
+        .dashboard-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 20px;
+        }
+
         .card {
           background: #fff;
-          padding: 16px;
-          border-radius: 8px;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+          padding: 20px;
+          border-radius: 12px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 6px 18px rgba(0,0,0,0.12);
         }
 
         .react-calendar-heatmap text { font-size: 9px; }
@@ -139,22 +197,12 @@ function StudentDashboard() {
         .color-github-3 { fill: #239a3b; }
         .color-github-4 { fill: #196127; }
 
-        @media (max-width: 768px) {
-          .dashboard-grid {
-            grid-template-columns: 1fr;
-          }
-        }
-
         @media (max-width: 480px) {
           .card {
-            padding: 12px;
+            padding: 16px;
           }
 
-          .dashboard-grid {
-            gap: 12px;
-          }
-
-          h2 {
+          .dashboard-title {
             font-size: 1.5rem;
           }
 
