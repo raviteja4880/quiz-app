@@ -28,52 +28,52 @@ function StudentDashboard() {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
-    async function fetchDashboard() {
-      if (!token) {
-        console.error("No token found. User might not be logged in.");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-
-        const res = await axios.get(`${BACKEND_URL}/api/dashboard/student`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          timeout: 5000,
-        });
-
-        const { heatmap = [], trend = [], summary = {} } = res.data;
-
-        setHeatmapData(heatmap.map((d) => ({ date: d.date, count: d.count })));
-        setTrendData(
-          trend
-            .map((d) => ({ date: d.date, percentage: d.percentage }))
-            .sort((a, b) => new Date(a.date) - new Date(b.date))
-        );
-        setSummary(summary);
-      } catch (err) {
-        if (err.response) {
-          console.error(
-            `Dashboard fetch error: ${err.response.status} — ${err.response.data.message || err.message}`
-          );
-        } else if (err.request) {
-          console.error("No response from backend:", err.request);
-        } else {
-          console.error("Error setting up request:", err.message);
-        }
-      } finally {
-        setLoading(false);
-      }
+  async function fetchDashboard() {
+    if (!token) {
+      console.error("No token found. User might not be logged in.");
+      setLoading(false);
+      return;
     }
 
-    fetchDashboard();
-  }, [token]);
+    try {
+      setLoading(true);
+
+      const res = await axios.get(`${BACKEND_URL}/api/dashboard/student`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        timeout: 5000,
+      });
+
+      const { heatmap = [], trend = [], summary = {} } = res.data;
+
+      setHeatmapData(heatmap.map((d) => ({ date: d.date, count: d.count })));
+      setTrendData(
+        trend
+          .map((d) => ({ date: d.date, percentage: d.percentage }))
+          .sort((a, b) => new Date(a.date) - new Date(b.date))
+      );
+      setSummary(summary);
+    } catch (err) {
+      if (err.response) {
+        console.error(
+          `Dashboard fetch error: ${err.response.status} — ${err.response.data.message || err.message}`
+        );
+      } else if (err.request) {
+        console.error("No response from backend:", err.request);
+      } else {
+        console.error("Error setting up request:", err.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  fetchDashboard();
+}, [token]);
 
   if (loading) return <Loader />;
 
