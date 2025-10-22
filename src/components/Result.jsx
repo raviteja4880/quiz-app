@@ -136,7 +136,7 @@ function Result() {
         </button>
       </div>
 
-      {/* ✅ Responsive Styles */}
+      {/* Responsive Styles */}
       <style>{`
         /* General container adjustments */
         .result-container {
@@ -156,7 +156,7 @@ function Result() {
           font-size: 1.1rem;
         }
 
-        /* ✅ Tablet screens */
+        /* Tablet screens */
         @media (max-width: 768px) {
           .summary-card {
             max-width: 90%;
@@ -180,7 +180,7 @@ function Result() {
           }
         }
 
-        /* ✅ Small phones */
+        /* Small phones */
         @media (max-width: 480px) {
           .summary-card {
             border-radius: 14px;

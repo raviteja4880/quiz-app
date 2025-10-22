@@ -12,6 +12,8 @@ import {
   FaFrown,
   FaExclamationTriangle,
 } from "react-icons/fa";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function Quiz() {
   const { id, resultId } = useParams();
@@ -51,7 +53,7 @@ function Quiz() {
         }
         setQuiz(data);
       } catch (err) {
-        alert("Failed to load quiz: " + (err.response?.data?.message || err.message));
+        toast.error("Failed to load quiz: " + (err.response?.data?.message || err.message));
       }
     };
     fetchQuiz();
@@ -89,9 +91,9 @@ function Quiz() {
         userAnswers: answers,
       });
 
-      alert("Quiz submitted successfully!");
+      toast.success("Quiz submitted successfully!");
     } catch (err) {
-      alert(`Failed to submit quiz: ${err.response?.data?.message || err.message}`);
+      toast.error(`Failed to submit quiz: ${err.response?.data?.message || err.message}`);
     } finally {
       setSubmitting(false);
     }
@@ -223,6 +225,7 @@ function Quiz() {
               Back to My Results
             </Link>
           </div>
+          <ToastContainer position="top-right" autoClose={3000} />
         </div>
       );
     } else {
@@ -271,6 +274,7 @@ function Quiz() {
               Back to My Results
             </Link>
           </div>
+          <ToastContainer position="top-right" autoClose={3000} />
         </div>
       );
     }
@@ -362,6 +366,7 @@ function Quiz() {
               Start Exam
             </button>
           </div>
+          <ToastContainer position="top-right" autoClose={3000} />
         </div>
       </div>
     );
@@ -493,6 +498,7 @@ function Quiz() {
           </div>
         </div>
       </div>
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 }

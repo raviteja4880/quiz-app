@@ -28,52 +28,43 @@ function StudentDashboard() {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+    const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
-  async function fetchDashboard() {
-    if (!token) {
-      console.error("No token found. User might not be logged in.");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      const res = await axios.get(`${BACKEND_URL}/api/dashboard/student`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        timeout: 5000,
-      });
-
-      const { heatmap = [], trend = [], summary = {} } = res.data;
-
-      setHeatmapData(heatmap.map((d) => ({ date: d.date, count: d.count })));
-      setTrendData(
-        trend
-          .map((d) => ({ date: d.date, percentage: d.percentage }))
-          .sort((a, b) => new Date(a.date) - new Date(b.date))
-      );
-      setSummary(summary);
-    } catch (err) {
-      if (err.response) {
-        console.error(
-          `Dashboard fetch error: ${err.response.status} — ${err.response.data.message || err.message}`
-        );
-      } else if (err.request) {
-        console.error("No response from backend:", err.request);
-      } else {
-        console.error("Error setting up request:", err.message);
+    async function fetchDashboard() {
+      if (!token) {
+        console.error("No token found. User might not be logged in.");
+        setLoading(false);
+        return;
       }
-    } finally {
-      setLoading(false);
-    }
-  }
 
-  fetchDashboard();
-}, [token]);
+      try {
+        setLoading(true);
+        const res = await axios.get(`${BACKEND_URL}/api/dashboard/student`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          timeout: 5000,
+        });
+
+        const { heatmap = [], trend = [], summary = {} } = res.data;
+
+        setHeatmapData(heatmap.map((d) => ({ date: d.date, count: d.count })));
+        setTrendData(
+          trend
+            .map((d) => ({ date: d.date, percentage: d.percentage }))
+            .sort((a, b) => new Date(a.date) - new Date(b.date))
+        );
+        setSummary(summary);
+      } catch (err) {
+        console.error(err.response?.data?.message || err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchDashboard();
+  }, [token]);
 
   if (loading) return <Loader />;
 
@@ -94,7 +85,7 @@ function StudentDashboard() {
       <div className="dashboard-grid">
         {/* Activity Heatmap */}
         <div className="card">
-          <h3>Activity Heatmap (last 90 days)</h3>
+          <h3 className="card-title">Activity Heatmap (Last 90 days)</h3>
           <CalendarHeatmap
             startDate={startDate}
             endDate={endDate}
@@ -117,9 +108,9 @@ function StudentDashboard() {
 
         {/* Performance Trend */}
         <div className="card">
-          <h3>Performance Trend</h3>
+          <h3 className="card-title">Performance Trend</h3>
           {trendData.length === 0 ? (
-            <div className="py-10 text-center">No score data yet</div>
+            <div className="py-10 text-center text-muted">No score data yet</div>
           ) : (
             <ResponsiveContainer width="100%" height={240}>
               <LineChart data={trendData}>
@@ -135,7 +126,7 @@ function StudentDashboard() {
               </LineChart>
             </ResponsiveContainer>
           )}
-          <div style={{ marginTop: 12 }}>
+          <div className="summary">
             <div><strong>Total quizzes:</strong> {summary.totalQuizzes}</div>
             <div><strong>Average %:</strong> {summary.avgPercentage?.toFixed(2)}%</div>
             <div><strong>Best:</strong> {summary.bestQuiz ? `${summary.bestQuiz.quizTitle} — ${summary.bestQuiz.percentage}%` : "—"}</div>
@@ -146,76 +137,102 @@ function StudentDashboard() {
 
       {/* Styles */}
       <style>{`
-        body {
-          background-color: #f5f7fa;
-        }
-
         .dashboard-container {
           max-width: 1200px;
           margin: 0 auto;
           padding: 20px;
-          margin-top: 80px; /* Space from fixed navbar */
-        }
-
-        @media (max-width: 768px) {
-          .dashboard-container {
-            margin-top: 60px;
-            padding: 16px;
-          }
+          margin-top: 80px;
         }
 
         .dashboard-title {
-          font-size: 2rem;
+          font-size: 2.2rem;
           font-weight: 700;
           text-align: center;
-          margin-bottom: 24px;
+          margin-bottom: 30px;
+          color: #0b74de;
         }
 
         .dashboard-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: 20px;
+          grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+          gap: 25px;
         }
 
         .card {
-          background: #fff;
-          padding: 20px;
-          border-radius: 12px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-          transition: transform 0.2s, box-shadow 0.2s;
+          background: #ffffff;
+          padding: 25px;
+          border-radius: 15px;
+          box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+          transition: all 0.3s ease;
         }
 
         .card:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+          transform: translateY(-4px);
+          box-shadow: 0 12px 28px rgba(0,0,0,0.15);
         }
 
-        .react-calendar-heatmap text { font-size: 9px; }
+        .card-title {
+          font-size: 1.3rem;
+          font-weight: 600;
+          margin-bottom: 15px;
+          color: #333;
+        }
+
+        .summary {
+          margin-top: 15px;
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+          font-size: 0.95rem;
+          color: #555;
+        }
+
+        /* Calendar Heatmap */
+        .react-calendar-heatmap text {
+          font-size: 10px;
+        }
+
         .color-empty { fill: #ebedf0; }
         .color-github-1 { fill: #c6e48b; }
         .color-github-2 { fill: #7bc96f; }
         .color-github-3 { fill: #239a3b; }
         .color-github-4 { fill: #196127; }
 
-        @media (max-width: 480px) {
-          .card {
-            padding: 16px;
+        /* Responsive */
+        @media (max-width: 768px) {
+          .dashboard-container {
+            margin-top: 60px;
+            padding: 15px;
           }
 
           .dashboard-title {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
           }
 
-          h3 {
+          .card {
+            padding: 20px;
+          }
+
+          .react-calendar-heatmap text {
+            font-size: 8px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .dashboard-title {
+            font-size: 1.6rem;
+          }
+
+          .card-title {
             font-size: 1.1rem;
+          }
+
+          .summary {
+            font-size: 0.9rem;
           }
 
           .recharts-wrapper {
             height: 180px !important;
-          }
-
-          .react-calendar-heatmap text {
-            font-size: 7px;
           }
         }
       `}</style>

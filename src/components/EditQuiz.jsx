@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { quizAPI } from "../services/api";
 import Loader from "./Loader";
 import { FaCheckCircle, FaExclamationCircle, FaTrash, FaPlusCircle } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 function EditQuiz() {
   const { id } = useParams();
@@ -24,9 +25,11 @@ function EditQuiz() {
         const { data } = await quizAPI.getFullById(id);
         setQuiz(data);
         setError("");
+        toast.success("Quiz loaded successfully"); 
       } catch (err) {
         console.error("Failed to load quiz:", err.response?.data || err.message);
         setError("Failed to load quiz for editing");
+        toast.error("Failed to load quiz for editing");
       } finally {
         setLoading(false);
       }
@@ -65,23 +68,29 @@ function EditQuiz() {
       correctAnswer: 0,
     };
     setQuiz({ ...quiz, questions: [...quiz.questions, newQuestion] });
+    toast.info("New question added"); 
   };
 
   const deleteQuestion = (index) => {
-    if (!window.confirm("Delete this question?")) return;
-    const updated = quiz.questions.filter((_, i) => i !== index);
-    setQuiz({ ...quiz, questions: updated });
+    // Replacing window.confirm with a toast message
+    toast.warn("Click again to confirm deletion ⚠️");
+    setTimeout(() => {
+      const updated = quiz.questions.filter((_, i) => i !== index);
+      setQuiz({ ...quiz, questions: updated });
+      toast.success("Question deleted successfully");
+    }, 1000);
   };
 
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
       await quizAPI.update(id, quiz);
-      alert("Quiz updated successfully!");
+      toast.success("Quiz updated successfully");
       navigate("/admin");
     } catch (err) {
       console.error("Update failed:", err.response?.data || err.message);
       setError("Failed to update quiz");
+      toast.error("Failed to update quiz");
     }
   };
 

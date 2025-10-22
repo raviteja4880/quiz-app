@@ -123,7 +123,7 @@ function NavBar({ isLoggedIn, setIsLoggedIn }) {
                     <i className="bi bi-shield-lock me-2"></i> Role: {user?.role}
                   </div>
 
-                  {/* ✅ Dashboard link for users */}
+                  {/* Dashboard link for users */}
                   {user?.role === "user" && (
                     <button
                       className="dropdown-item-btn fw-semibold"

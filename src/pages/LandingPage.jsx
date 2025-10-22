@@ -366,7 +366,7 @@ function LandingPage({ setIsLoggedIn }) {
         </motion.div>
       </div>
 
-      {/* ✅ Inline responsive CSS */}
+      {/* Inline responsive CSS */}
       <style>{`
         @media (max-width: 768px) {
           .landing-text {

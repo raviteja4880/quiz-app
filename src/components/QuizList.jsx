@@ -62,7 +62,7 @@ function QuizList() {
         )}
       </div>
 
-      {/* ✅ Responsive Styling */}
+      {/* Responsive Styling */}
       <style>{`
         .quiz-list-container {
           padding-left: 1rem;
@@ -79,7 +79,7 @@ function QuizList() {
           box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
         }
 
-        /* ✅ Mobile adjustments */
+        /* Mobile adjustments */
         @media (max-width: 768px) {
           h2 {
             font-size: 1.5rem;
@@ -109,7 +109,7 @@ function QuizList() {
           }
         }
 
-        /* ✅ Small phones */
+        /* Small phones */
         @media (max-width: 480px) {
           .quiz-card {
             border-radius: 10px;

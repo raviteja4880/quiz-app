@@ -1,4 +1,3 @@
-// src/context/ResultsContext.js
 import React, { createContext, useState } from "react";
 
 export const ResultsContext = createContext();

@@ -2,54 +2,12 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { quizAPI } from "../services/api";
 import {
-  FaCheckCircle,
-  FaExclamationTriangle,
-  FaTimesCircle,
   FaTrashAlt,
   FaEdit,
   FaEye,
   FaEyeSlash,
 } from "react-icons/fa";
-
-// ✅ Reusable AlertBox component
-const AlertBox = ({ type, message, onClose }) => {
-  const getIcon = () => {
-    switch (type) {
-      case "success":
-        return <FaCheckCircle className="text-success me-2" />;
-      case "error":
-        return <FaTimesCircle className="text-danger me-2" />;
-      case "warning":
-        return <FaExclamationTriangle className="text-warning me-2" />;
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div
-      className={`alert alert-${
-        type === "success"
-          ? "success"
-          : type === "error"
-          ? "danger"
-          : "warning"
-      } d-flex align-items-center justify-content-between`}
-      role="alert"
-    >
-      <div className="d-flex align-items-center">
-        {getIcon()}
-        <span>{message}</span>
-      </div>
-      <button
-        type="button"
-        className="btn-close"
-        onClick={onClose}
-        aria-label="Close"
-      ></button>
-    </div>
-  );
-};
+import { toast } from "react-toastify";
 
 function AdminPanel() {
   const navigate = useNavigate();
@@ -69,23 +27,32 @@ function AdminPanel() {
   const [editingQuestionIndex, setEditingQuestionIndex] = useState(null);
   const [showQuestions, setShowQuestions] = useState(false);
 
-  // Alert state
-  const [alert, setAlert] = useState({ show: false, type: "", message: "" });
-
+  // Toast
   const showAlert = (type, message) => {
-    setAlert({ show: true, type, message });
-    setTimeout(() => setAlert({ show: false, type: "", message: "" }), 3000);
+    switch (type) {
+      case "success":
+        toast.success(message);
+        break;
+      case "error":
+        toast.error(message);
+        break;
+      case "warning":
+        toast.warn(message);
+        break;
+      default:
+        toast.info(message);
+    }
   };
 
   const fetchQuizzes = useCallback(async () => {
-  try {
-    const res = await quizAPI.getAll();
-    setQuizzes(res.data);
-  } catch (err) {
-    console.error("Error fetching quizzes:", err);
-    showAlert("error", "Failed to load quizzes. Please try again.");
-  }
-  },[]);
+    try {
+      const res = await quizAPI.getAll();
+      setQuizzes(res.data);
+    } catch (err) {
+      console.error("Error fetching quizzes:", err);
+      showAlert("error", "Failed to load quizzes. Please try again.");
+    }
+  }, []);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -94,7 +61,7 @@ function AdminPanel() {
     } else {
       fetchQuizzes();
     }
-  }, [navigate,fetchQuizzes]);
+  }, [navigate, fetchQuizzes]);
 
   const addOrUpdateQuestion = () => {
     if (!question.trim() || options.some((opt) => !opt.trim())) {
@@ -194,14 +161,6 @@ function AdminPanel() {
 
   return (
     <div className="container mt-4">
-      {alert.show && (
-        <AlertBox
-          type={alert.type}
-          message={alert.message}
-          onClose={() => setAlert({ show: false })}
-        />
-      )}
-
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>{editingQuiz ? "Edit Quiz" : "Admin Panel - Create Quiz"}</h2>
       </div>
