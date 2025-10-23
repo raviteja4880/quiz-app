@@ -297,28 +297,35 @@ function AdminPanel() {
       <ul className="list-group mt-3">
         {quizzes.map((quiz) => (
           <li
-            key={quiz._id}
-            className="list-group-item d-flex justify-content-between align-items-center"
+          key={quiz._id}
+          className="list-group-item p-3 d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center rounded-3 mb-3 shadow-sm"
+        >
+          {/* Quiz Info */}
+          <div className="mb-3 mb-lg-0 flex-grow-1">
+            <strong>{quiz.title}</strong> — {quiz.description} ({quiz.timeLimit} mins)
+          </div>
+
+          {/* Buttons */}
+          <div
+            className="d-flex flex-row gap-2 justify-content-start justify-content-lg-end"
+            style={{ flexShrink: 0 }}
           >
-            <div>
-              <strong>{quiz.title}</strong> — {quiz.description} (
-              {quiz.timeLimit} mins)
-            </div>
-            <div>
-              <button
-                className="btn btn-sm btn-info me-2"
-                onClick={() => navigate(`/quiz/edit/${quiz._id}`)}
-              >
-                <FaEdit className="me-1" /> Edit
-              </button>
-              <button
-                className="btn btn-danger btn-sm"
-                onClick={() => deleteQuiz(quiz._id)}
-              >
-                <FaTrashAlt className="me-1" /> Delete
-              </button>
-            </div>
-          </li>
+            <button
+              className="btn btn-info btn-sm px-3"
+              style={{ width: "100px" }}
+              onClick={() => navigate(`/quiz/edit/${quiz._id}`)}
+            >
+              <FaEdit className="me-1" /> Edit
+            </button>
+            <button
+              className="btn btn-danger btn-sm px-3"
+              style={{ width: "100px" }}
+              onClick={() => deleteQuiz(quiz._id)}
+            >
+              <FaTrashAlt className="me-1" /> Delete
+            </button>
+          </div>
+        </li>
         ))}
       </ul>
     </div>

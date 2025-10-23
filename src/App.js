@@ -31,8 +31,6 @@ function AppWrapper() {
 
 function App({ isLoggedIn, setIsLoggedIn }) {
   const location = useLocation();
-
-  // Hide navbar on quiz pages (live quiz or review)
   const hideNavbar = location.pathname.startsWith("/quiz/");
 
   const protectedRoutes = [
