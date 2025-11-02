@@ -88,6 +88,44 @@ function LandingPage({ setIsLoggedIn }) {
     }
   };
 
+  // 🔹 Scrolling banner component
+  const ScrollingBanner = ({ message }) => {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: -40 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -40 }}
+        transition={{ duration: 0.4 }}
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100%",
+          overflow: "hidden",
+          background: "linear-gradient(90deg, #667eea 0%, #764ba2 100%)",
+          color: "#fff",
+          zIndex: 9999,
+          height: "40px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          borderBottom: "1px solid rgba(255,255,255,0.2)",
+          fontWeight: 600,
+          letterSpacing: "0.5px",
+          backdropFilter: "blur(6px)",
+        }}
+      >
+        <motion.div
+          animate={{ x: ["100%", "-100%"] }}
+          transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
+          style={{ whiteSpace: "nowrap", fontSize: "0.95rem" }}
+        >
+          {message}
+        </motion.div>
+      </motion.div>
+    );
+  };
+
   return (
     <div
       className="min-vh-100 d-flex align-items-center justify-content-center"
@@ -98,6 +136,13 @@ function LandingPage({ setIsLoggedIn }) {
         padding: "20px",
       }}
     >
+      {/* Banner appears when backend is waking up */}
+      <AnimatePresence>
+        {loading && (
+          <ScrollingBanner message="We’re getting things ready for you — please hold on for a few seconds. Thank you for waiting!" />
+        )}
+      </AnimatePresence>
+
       <div
         className="container d-flex flex-column flex-lg-row align-items-center justify-content-between landing-container"
         style={{ maxWidth: "1200px", gap: "2rem" }}
@@ -195,14 +240,18 @@ function LandingPage({ setIsLoggedIn }) {
                 <div className="d-flex justify-content-center mb-4 flex-wrap gap-2">
                   <button
                     type="button"
-                    className={`btn ${role === "user" ? "btn-primary" : "btn-outline-light"}`}
+                    className={`btn ${
+                      role === "user" ? "btn-primary" : "btn-outline-light"
+                    }`}
                     onClick={() => setRole("user")}
                   >
                     User
                   </button>
                   <button
                     type="button"
-                    className={`btn ${role === "admin" ? "btn-success" : "btn-outline-light"}`}
+                    className={`btn ${
+                      role === "admin" ? "btn-success" : "btn-outline-light"
+                    }`}
                     onClick={() => setRole("admin")}
                   >
                     Admin
@@ -280,14 +329,18 @@ function LandingPage({ setIsLoggedIn }) {
                 <div className="d-flex justify-content-center mb-4 flex-wrap gap-2">
                   <button
                     type="button"
-                    className={`btn ${role === "user" ? "btn-primary" : "btn-outline-light"}`}
+                    className={`btn ${
+                      role === "user" ? "btn-primary" : "btn-outline-light"
+                    }`}
                     onClick={() => setRole("user")}
                   >
                     User
                   </button>
                   <button
                     type="button"
-                    className={`btn ${role === "admin" ? "btn-success" : "btn-outline-light"}`}
+                    className={`btn ${
+                      role === "admin" ? "btn-success" : "btn-outline-light"
+                    }`}
                     onClick={() => setRole("admin")}
                   >
                     Admin
