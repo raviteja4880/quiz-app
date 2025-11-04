@@ -29,15 +29,15 @@ function Quiz() {
   const [exitLocked, setExitLocked] = useState(false);
   const [result, setResult] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-  // eslint-disable-next-line no-unused-vars
   const [agree, setAgree] = useState(false);
-  // eslint-disable-next-line no-unused-vars
   const [attemptedStart, setAttemptedStart] = useState(false);
   const [blockInteraction, setBlockInteraction] = useState(false);
-  const [recentReentry, setRecentReentry] = useState(false); 
+
   const [timerId, setTimerId] = useState(null);
-  const reentryTimeout = useRef(null);
   const reviewMode = !!resultId;
+
+  const [recentReentry, setRecentReentry] = useState(false);
+  const reentryTimeout = useRef(null);
 
   // ===================== Fetch Quiz =====================
   useEffect(() => {
@@ -140,15 +140,14 @@ function Quiz() {
   // ===================== Fullscreen Exit Tracking =====================
   useEffect(() => {
     const handleExit = () => {
-      if (recentReentry) return; // Ignore next fullscreenchange after re-entry
+      if (recentReentry) return;
 
       if (!document.fullscreenElement && started && !reviewMode && !result) {
         setExitCount((prev) => prev + 1);
         setShowWarning(true);
-        setBlockInteraction(true);
+        setBlockInteraction(true); // block UI interactions (overlay will show)
       }
     };
-
     document.addEventListener("fullscreenchange", handleExit);
     return () => document.removeEventListener("fullscreenchange", handleExit);
   }, [started, reviewMode, result, recentReentry]);
@@ -166,7 +165,6 @@ function Quiz() {
   }, [exitCount, started, result, reviewMode, exitLocked, handleSubmit]);
 
   // ===================== Handlers =====================
-  // eslint-disable-next-line no-unused-vars
   const handleStart = async () => {
     setAttemptedStart(true);
     if (!agree) {
@@ -174,20 +172,18 @@ function Quiz() {
       return;
     }
 
-    if (document.documentElement.requestFullscreen)
-      await document.documentElement.requestFullscreen();
+    if (document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen();
 
     setStarted(true);
   };
 
   const handleReEnterFullscreen = async () => {
-    if (document.documentElement.requestFullscreen)
-      await document.documentElement.requestFullscreen();
+    if (document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen();
 
+    // hide warning and restore interaction
     setShowWarning(false);
     setBlockInteraction(false);
 
-    // Prevent next fullscreenchange from triggering false "exit" event
     setRecentReentry(true);
     clearTimeout(reentryTimeout.current);
     reentryTimeout.current = setTimeout(() => setRecentReentry(false), 1500);
@@ -315,12 +311,10 @@ function Quiz() {
           <div className="card shadow p-4 text-center" style={{ maxWidth: "500px", width: "100%" }}>
             <h4 className="mb-3">{greeting}</h4>
             <p>
-              <FaCheckCircle className="text-success me-1" /> Correct:{" "}
-              <b className="text-success">{result.correctCount}</b>
+              <FaCheckCircle className="text-success me-1" /> Correct: <b className="text-success">{result.correctCount}</b>
             </p>
             <p>
-              <FaTimesCircle className="text-danger me-1" /> Wrong:{" "}
-              <b className="text-danger">{result.wrongCount}</b>
+              <FaTimesCircle className="text-danger me-1" /> Wrong: <b className="text-danger">{result.wrongCount}</b>
             </p>
             <p>
               <FaInfoCircle className="text-secondary me-1" /> Not Answered:{" "}
@@ -339,12 +333,118 @@ function Quiz() {
     }
   }
 
+  // ---------- BEFORE START ----------
+  if (!started) {
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100 p-3">
+        <div
+          className="card shadow-lg p-4 text-start w-100"
+          style={{
+            maxWidth: "600px",
+            background: "linear-gradient(135deg, #e9f9f6 0%, #e9f9f6 100%)",
+          }}
+        >
+          <h3 className="text-center mb-3">{quiz.title}</h3>
+          <p>
+            <b>{quiz.description}</b>
+          </p>
+
+          <ul className="mb-4" style={{ listStyleType: "disc", paddingLeft: "1.5rem" }}>
+            <li>Read all questions carefully before answering.</li>
+            <li>You must stay in fullscreen mode during the exam.</li>
+            <li>If you exit fullscreen 3 times, your exam will be automatically submitted.</li>
+            <li>Each question must be answered sequentially. You can revisit previous questions.</li>
+            <li>
+              Question Palette Legend:
+              <ul className="mt-2" style={{ listStyle: "none", paddingLeft: "0" }}>
+                <li className="d-flex align-items-center mb-1">
+                  <span
+                    style={{
+                      display: "inline-block",
+                      width: "20px",
+                      height: "20px",
+                      backgroundColor: "#6c757d",
+                      marginRight: "8px",
+                      borderRadius: "4px",
+                    }}
+                  ></span>
+                  Not Visited
+                </li>
+                <li className="d-flex align-items-center mb-1">
+                  <span
+                    style={{
+                      display: "inline-block",
+                      width: "20px",
+                      height: "20px",
+                      backgroundColor: "#dc3545",
+                      marginRight: "8px",
+                      borderRadius: "4px",
+                    }}
+                  ></span>
+                  Currently Viewing / Visited
+                </li>
+                <li className="d-flex align-items-center mb-1">
+                  <span
+                    style={{
+                      display: "inline-block",
+                      width: "20px",
+                      height: "20px",
+                      backgroundColor: "#28a745",
+                      marginRight: "8px",
+                      borderRadius: "4px",
+                    }}
+                  ></span>
+                  Answered
+                </li>
+              </ul>
+            </li>
+            <li>Time limit: <b>{quiz.timeLimit} minutes</b></li>
+            <li>Submit before time runs out; otherwise, it will <b>auto-submit.</b></li>
+          </ul>
+          <div className="form-check mt-3">
+            <input
+              type="checkbox"
+              id="agree"
+              className={`form-check-input me-2 agree-checkbox ${!agree && attemptedStart ? "highlight-warning" : ""}`}
+              checked={agree}
+              onChange={(e) => setAgree(e.target.checked)}
+            />
+            <label
+              htmlFor="agree"
+              className="form-check-label"
+              style={
+                !agree && attemptedStart
+                  ? {
+                      color: "#ffc107",
+                      fontWeight: 600,
+                      border: "3px solid #ffc107",
+                      boxShadow: "0 0 8px 2px #ffeb3b",
+                      padding: "4px 8px",
+                      borderRadius: "4px",
+                      transition: "box-shadow 0.3s ease, border 0.3s ease",
+                    }
+                  : {}
+              }
+            >
+              <b>I carefully Read all instructions</b>
+            </label>
+          </div>
+          <div className="text-center">
+            <button className="btn btn-success btn-lg" onClick={handleStart}>
+              Start Exam
+            </button>
+          </div>
+          <ToastContainer position="top-right" autoClose={3000} />
+        </div>
+      </div>
+    );
+  }
+
   // ---------- LIVE QUIZ ----------
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
   const question = quiz.questions[currentQ];
-  const progressColor =
-    timeLeft <= 3 * 60 ? "text-danger" : timeLeft <= 5 * 60 ? "text-warning" : "text-success";
+  const progressColor = timeLeft <= 3 * 60 ? "text-danger" : timeLeft <= 5 * 60 ? "text-warning" : "text-success";
 
   return (
     <div
@@ -354,34 +454,34 @@ function Quiz() {
         overflow: "hidden",
       }}
     >
-      {/* Interaction Overlay */}
+      {/* Interaction overlay (shows cursor and blocks UI) */}
       {blockInteraction && (
         <div
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(0, 0, 0, 0.25)",
-            backdropFilter: "blur(2px)",
+            backgroundColor: "rgba(0,0,0,0.25)",
             cursor: "not-allowed",
             zIndex: 9998,
           }}
-        ></div>
+        />
       )}
 
+      {/* Warning box - zIndex above overlay so its button is clickable */}
       {showWarning && exitCount < 3 && (
         <div
           className="position-fixed top-0 start-50 translate-middle-x mt-3 alert alert-warning shadow"
-          style={{ zIndex: 9999 }}
+          style={{ zIndex: 9999, pointerEvents: "auto" }}
         >
           <FaExclamationTriangle className="me-2" />
-          Fullscreen exited — Please re-enter to continue
+          Fullscreen exited — Please re-enter to start
           <button className="btn btn-sm btn-warning ms-2" onClick={handleReEnterFullscreen}>
             Re-enter Fullscreen
           </button>
         </div>
       )}
 
-      {/* Question Palette */}
+      {/* ---------- Question Palette (Multi-row Grid) ---------- */}
       <div className="d-flex justify-content-center mb-3 mt-4">
         <div
           className="card p-3 shadow-sm bg-white"
@@ -393,15 +493,19 @@ function Quiz() {
           }}
         >
           {quiz.questions.map((_, index) => {
-            let btnClass = "btn btn-secondary btn-sm";
-            if (answers[index] !== null) btnClass = "btn btn-success btn-sm";
-            else if (visited[index]) btnClass = "btn btn-danger btn-sm text-white";
-            else if (currentQ === index) btnClass = "btn btn-danger btn-sm text-white";
+            let btnClass = "btn btn-secondary btn-sm"; // default
+            if (answers[index] !== null) btnClass = "btn btn-success btn-sm"; // answered
+            else if (visited[index]) btnClass = "btn btn-danger btn-sm text-white"; // visited but not answered
+            else if (currentQ === index) btnClass = "btn btn-danger btn-sm text-white"; // current
             return (
               <button
                 key={index}
                 className={btnClass}
-                style={{ height: "45px", fontWeight: "600", borderRadius: "8px" }}
+                style={{
+                  height: "45px",
+                  fontWeight: "600",
+                  borderRadius: "8px",
+                }}
                 onClick={() => {
                   if (blockInteraction) return;
                   setCurrentQ(index);
@@ -419,7 +523,7 @@ function Quiz() {
         </div>
       </div>
 
-      {/* Question Section */}
+      {/* ---------- Question Section ---------- */}
       <div className="flex-grow-1 d-flex align-items-center justify-content-center">
         <div
           className="card shadow bg-white text-dark p-4"
@@ -449,9 +553,7 @@ function Quiz() {
             {question.options.map((option, i) => (
               <div
                 key={i}
-                className={`p-3 rounded shadow-sm border ${
-                  answers[currentQ] === i ? "bg-info text-white" : "bg-light"
-                }`}
+                className={`p-3 rounded shadow-sm border ${answers[currentQ] === i ? "bg-info text-white" : "bg-light"}`}
                 style={{
                   cursor: blockInteraction ? "not-allowed" : "pointer",
                   transition: "all 0.2s ease-in-out",
@@ -506,11 +608,7 @@ function Quiz() {
               >
                 {submitting ? (
                   <>
-                    <span
-                      className="spinner-border spinner-border-sm me-2"
-                      role="status"
-                      aria-hidden="true"
-                    ></span>
+                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                     Submitting...
                   </>
                 ) : currentQ < quiz.questions.length - 1 ? (
