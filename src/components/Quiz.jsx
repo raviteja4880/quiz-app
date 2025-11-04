@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { quizAPI } from "../services/api";
 import Loader from "./Loader";
@@ -29,11 +29,14 @@ function Quiz() {
   const [exitLocked, setExitLocked] = useState(false);
   const [result, setResult] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [agree, setAgree] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [attemptedStart, setAttemptedStart] = useState(false);
-  const [blockInteraction, setBlockInteraction] = useState(false); 
-
+  const [blockInteraction, setBlockInteraction] = useState(false);
+  const [recentReentry, setRecentReentry] = useState(false); 
   const [timerId, setTimerId] = useState(null);
+  const reentryTimeout = useRef(null);
   const reviewMode = !!resultId;
 
   // ===================== Fetch Quiz =====================
@@ -137,15 +140,18 @@ function Quiz() {
   // ===================== Fullscreen Exit Tracking =====================
   useEffect(() => {
     const handleExit = () => {
+      if (recentReentry) return; // Ignore next fullscreenchange after re-entry
+
       if (!document.fullscreenElement && started && !reviewMode && !result) {
         setExitCount((prev) => prev + 1);
         setShowWarning(true);
-        setBlockInteraction(true); 
+        setBlockInteraction(true);
       }
     };
+
     document.addEventListener("fullscreenchange", handleExit);
     return () => document.removeEventListener("fullscreenchange", handleExit);
-  }, [started, reviewMode, result]);
+  }, [started, reviewMode, result, recentReentry]);
 
   useEffect(() => {
     if (started && !result && !reviewMode && !exitLocked) {
@@ -160,6 +166,7 @@ function Quiz() {
   }, [exitCount, started, result, reviewMode, exitLocked, handleSubmit]);
 
   // ===================== Handlers =====================
+  // eslint-disable-next-line no-unused-vars
   const handleStart = async () => {
     setAttemptedStart(true);
     if (!agree) {
@@ -178,24 +185,30 @@ function Quiz() {
       await document.documentElement.requestFullscreen();
 
     setShowWarning(false);
-    setBlockInteraction(false); 
+    setBlockInteraction(false);
+
+    // Prevent next fullscreenchange from triggering false "exit" event
+    setRecentReentry(true);
+    clearTimeout(reentryTimeout.current);
+    reentryTimeout.current = setTimeout(() => setRecentReentry(false), 1500);
   };
 
   const handleOptionChange = (qIndex, optionIndex) => {
-    if (reviewMode) return;
+    if (reviewMode || blockInteraction) return;
     const newAnswers = [...answers];
     newAnswers[qIndex] = optionIndex;
     setAnswers(newAnswers);
   };
 
   const handleClearResponse = (qIndex) => {
-    if (reviewMode) return;
+    if (reviewMode || blockInteraction) return;
     const newAnswers = [...answers];
     newAnswers[qIndex] = null;
     setAnswers(newAnswers);
   };
 
   const handleNext = () => {
+    if (blockInteraction) return;
     setVisited((prev) => {
       const newVisited = [...prev];
       newVisited[currentQ] = true;
@@ -206,6 +219,7 @@ function Quiz() {
   };
 
   const handlePrev = () => {
+    if (blockInteraction) return;
     setVisited((prev) => {
       const newVisited = [...prev];
       newVisited[currentQ] = true;
@@ -325,117 +339,6 @@ function Quiz() {
     }
   }
 
-  // ---------- BEFORE START ----------
-  if (!started) {
-    return (
-      <div className="d-flex justify-content-center align-items-center vh-100 p-3">
-        <div
-          className="card shadow-lg p-4 text-start w-100"
-          style={{
-            maxWidth: "600px",
-            background: "linear-gradient(135deg, #e9f9f6 0%, #e9f9f6 100%)",
-          }}
-        >
-          <h3 className="text-center mb-3">{quiz.title}</h3>
-          <p>
-            <b>{quiz.description}</b>
-          </p>
-
-          <ul className="mb-4" style={{ listStyleType: "disc", paddingLeft: "1.5rem" }}>
-            <li>Read all questions carefully before answering.</li>
-            <li>You must stay in fullscreen mode during the exam.</li>
-            <li>If you exit fullscreen 3 times, your exam will be automatically submitted.</li>
-            <li>Each question must be answered sequentially. You can revisit previous questions.</li>
-            <li>
-              Question Palette Legend:
-              <ul className="mt-2" style={{ listStyle: "none", paddingLeft: "0" }}>
-                <li className="d-flex align-items-center mb-1">
-                  <span
-                    style={{
-                      display: "inline-block",
-                      width: "20px",
-                      height: "20px",
-                      backgroundColor: "#6c757d",
-                      marginRight: "8px",
-                      borderRadius: "4px",
-                    }}
-                  ></span>
-                  Not Visited
-                </li>
-                <li className="d-flex align-items-center mb-1">
-                  <span
-                    style={{
-                      display: "inline-block",
-                      width: "20px",
-                      height: "20px",
-                      backgroundColor: "#dc3545",
-                      marginRight: "8px",
-                      borderRadius: "4px",
-                    }}
-                  ></span>
-                  Currently Viewing / Visited
-                </li>
-                <li className="d-flex align-items-center mb-1">
-                  <span
-                    style={{
-                      display: "inline-block",
-                      width: "20px",
-                      height: "20px",
-                      backgroundColor: "#28a745",
-                      marginRight: "8px",
-                      borderRadius: "4px",
-                    }}
-                  ></span>
-                  Answered
-                </li>
-              </ul>
-            </li>
-            <li>
-              Time limit: <b>{quiz.timeLimit} minutes</b>
-            </li>
-            <li>
-              Submit before time runs out; otherwise, it will <b>auto-submit.</b>
-            </li>
-          </ul>
-          <div className="form-check mt-3">
-            <input
-              type="checkbox"
-              id="agree"
-              className={`form-check-input me-2 agree-checkbox ${!agree && attemptedStart ? "highlight-warning" : ""}`}
-              checked={agree}
-              onChange={(e) => setAgree(e.target.checked)}
-            />
-            <label
-              htmlFor="agree"
-              className="form-check-label"
-              style={
-                !agree && attemptedStart
-                  ? {
-                      color: "#ffc107",
-                      fontWeight: 600,
-                      border: "3px solid #ffc107",
-                      boxShadow: "0 0 8px 2px #ffeb3b",
-                      padding: "4px 8px",
-                      borderRadius: "4px",
-                      transition: "box-shadow 0.3s ease, border 0.3s ease",
-                    }
-                  : {}
-              }
-            >
-              <b>I carefully Read all instructions</b>
-            </label>
-          </div>
-          <div className="text-center">
-            <button className="btn btn-success btn-lg" onClick={handleStart}>
-              Start Exam
-            </button>
-          </div>
-          <ToastContainer position="top-right" autoClose={3000} />
-        </div>
-      </div>
-    );
-  }
-
   // ---------- LIVE QUIZ ----------
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
@@ -448,24 +351,37 @@ function Quiz() {
       className="vh-100 vw-100 p-3 d-flex flex-column"
       style={{
         background: "linear-gradient(135deg, #6a85b6 0%, #bac8e0 100%)",
-        cursor: blockInteraction ? "not-allowed" : "auto",
-        pointerEvents: blockInteraction ? "none" : "auto", 
+        overflow: "hidden",
       }}
     >
+      {/* Interaction Overlay */}
+      {blockInteraction && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.25)",
+            backdropFilter: "blur(2px)",
+            cursor: "not-allowed",
+            zIndex: 9998,
+          }}
+        ></div>
+      )}
+
       {showWarning && exitCount < 3 && (
         <div
           className="position-fixed top-0 start-50 translate-middle-x mt-3 alert alert-warning shadow"
-          style={{ zIndex: 9999, pointerEvents: "auto", cursor: "auto" }} 
+          style={{ zIndex: 9999 }}
         >
           <FaExclamationTriangle className="me-2" />
-          Fullscreen exited — Please re-enter to start
+          Fullscreen exited — Please re-enter to continue
           <button className="btn btn-sm btn-warning ms-2" onClick={handleReEnterFullscreen}>
             Re-enter Fullscreen
           </button>
         </div>
       )}
 
-      {/* ---------- Question Palette ---------- */}
+      {/* Question Palette */}
       <div className="d-flex justify-content-center mb-3 mt-4">
         <div
           className="card p-3 shadow-sm bg-white"
@@ -485,12 +401,9 @@ function Quiz() {
               <button
                 key={index}
                 className={btnClass}
-                style={{
-                  height: "45px",
-                  fontWeight: "600",
-                  borderRadius: "8px",
-                }}
+                style={{ height: "45px", fontWeight: "600", borderRadius: "8px" }}
                 onClick={() => {
+                  if (blockInteraction) return;
                   setCurrentQ(index);
                   setVisited((prev) => {
                     const newVisited = [...prev];
@@ -506,7 +419,7 @@ function Quiz() {
         </div>
       </div>
 
-      {/* ---------- Question Section ---------- */}
+      {/* Question Section */}
       <div className="flex-grow-1 d-flex align-items-center justify-content-center">
         <div
           className="card shadow bg-white text-dark p-4"
@@ -540,7 +453,7 @@ function Quiz() {
                   answers[currentQ] === i ? "bg-info text-white" : "bg-light"
                 }`}
                 style={{
-                  cursor: "pointer",
+                  cursor: blockInteraction ? "not-allowed" : "pointer",
                   transition: "all 0.2s ease-in-out",
                 }}
                 onClick={() => handleOptionChange(currentQ, i)}
@@ -554,6 +467,7 @@ function Quiz() {
                     value={i}
                     checked={answers[currentQ] === i}
                     onChange={() => handleOptionChange(currentQ, i)}
+                    disabled={blockInteraction}
                   />
                   <label className="form-check-label w-100" htmlFor={`q${currentQ}-opt${i}`}>
                     {option}
@@ -567,7 +481,7 @@ function Quiz() {
           <div className="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-2">
             <button
               className="btn btn-outline-secondary"
-              disabled={currentQ === 0 || submitting}
+              disabled={currentQ === 0 || submitting || blockInteraction}
               onClick={handlePrev}
               style={{ minWidth: "120px" }}
             >
@@ -578,7 +492,7 @@ function Quiz() {
               <button
                 className="btn btn-outline-danger"
                 onClick={() => handleClearResponse(currentQ)}
-                disabled={answers[currentQ] === null || submitting}
+                disabled={answers[currentQ] === null || submitting || blockInteraction}
                 style={{ minWidth: "120px" }}
               >
                 Clear Response
@@ -587,7 +501,7 @@ function Quiz() {
               <button
                 className="btn btn-primary"
                 onClick={handleNext}
-                disabled={submitting}
+                disabled={submitting || blockInteraction}
                 style={{ minWidth: "120px" }}
               >
                 {submitting ? (
@@ -609,6 +523,7 @@ function Quiz() {
           </div>
         </div>
       </div>
+
       <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
