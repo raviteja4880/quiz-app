@@ -20,7 +20,7 @@ function Quiz() {
 
   const [quiz, setQuiz] = useState(null);
   const [answers, setAnswers] = useState([]);
-  const [visited, setVisited] = useState([]); 
+  const [visited, setVisited] = useState([]);
   const [currentQ, setCurrentQ] = useState(0);
   const [started, setStarted] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
@@ -31,7 +31,7 @@ function Quiz() {
   const [submitting, setSubmitting] = useState(false);
   const [agree, setAgree] = useState(false);
   const [attemptedStart, setAttemptedStart] = useState(false);
-
+  const [blockInteraction, setBlockInteraction] = useState(false); 
 
   const [timerId, setTimerId] = useState(null);
   const reviewMode = !!resultId;
@@ -73,56 +73,61 @@ function Quiz() {
     return () => clearInterval(id);
   }, [started, reviewMode, result]);
 
- // ===================== handleSubmit =====================
-const handleSubmit = useCallback(async () => {
-  if (submitting || reviewMode || result) return;
+  // ===================== handleSubmit =====================
+  const handleSubmit = useCallback(async () => {
+    if (submitting || reviewMode || result) return;
 
-  if (timerId) clearInterval(timerId);
-  setSubmitting(true);
+    if (timerId) clearInterval(timerId);
+    setSubmitting(true);
 
-  const loadingToast = toast.loading("Submitting your quiz... please wait");
+    const loadingToast = toast.loading("Submitting your quiz... please wait");
 
-  try {
-    const res = await quizAPI.submit(quiz._id, answers);
-    if (document.fullscreenElement) await document.exitFullscreen();
+    try {
+      const res = await quizAPI.submit(quiz._id, answers);
+      if (document.fullscreenElement) await document.exitFullscreen();
 
-    setResult({
-      score: res.data.score,
-      correctCount: res.data.correctCount,
-      wrongCount: res.data.wrongCount,
-      total: res.data.total,
-      percentage: res.data.percentage,
-      status: res.data.status,
-      userAnswers: answers,
-    });
+      const correctCount = res.data.correctCount ?? 0;
+      const wrongCount = res.data.wrongCount ?? 0;
+      const total = res.data.total ?? quiz.questions.length;
+      const notAnswered = total - (correctCount + wrongCount);
 
-    toast.update(loadingToast, {
-      render: "Quiz submitted successfully!",
-      type: "success",
-      isLoading: false,
-      autoClose: 4000,
-      closeOnClick: true,
-    });
+      setResult({
+        score: res.data.score,
+        correctCount,
+        wrongCount,
+        total,
+        notAnswered,
+        percentage: res.data.percentage,
+        status: res.data.status,
+        userAnswers: answers,
+      });
 
-    setTimeout(() => {
-      toast.info("Your results are ready to view", {
-        autoClose: 5000,
+      toast.update(loadingToast, {
+        render: "Quiz submitted successfully!",
+        type: "success",
+        isLoading: false,
+        autoClose: 4000,
         closeOnClick: true,
       });
-    }, 2200);
-   
-  } catch (err) {
-    toast.update(loadingToast, {
-      render: `Failed to submit quiz: ${err.response?.data?.message || err.message}`,
-      type: "error",
-      isLoading: false,
-      autoClose: 4000,
-      closeOnClick: true,
-    });
-  } finally {
-    setSubmitting(false);
-  }
-}, [answers, submitting, reviewMode, result, quiz?._id, timerId]);
+
+      setTimeout(() => {
+        toast.info("Your results are ready to view", {
+          autoClose: 5000,
+          closeOnClick: true,
+        });
+      }, 2200);
+    } catch (err) {
+      toast.update(loadingToast, {
+        render: `Failed to submit quiz: ${err.response?.data?.message || err.message}`,
+        type: "error",
+        isLoading: false,
+        autoClose: 4000,
+        closeOnClick: true,
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  }, [answers, submitting, reviewMode, result, quiz?._id, quiz?.questions?.length, timerId]);
 
   // ===================== Auto-submit on timeout =====================
   useEffect(() => {
@@ -135,6 +140,7 @@ const handleSubmit = useCallback(async () => {
       if (!document.fullscreenElement && started && !reviewMode && !result) {
         setExitCount((prev) => prev + 1);
         setShowWarning(true);
+        setBlockInteraction(true); 
       }
     };
     document.addEventListener("fullscreenchange", handleExit);
@@ -144,7 +150,7 @@ const handleSubmit = useCallback(async () => {
   useEffect(() => {
     if (started && !result && !reviewMode && !exitLocked) {
       if (exitCount === 1 || exitCount === 2) {
-        toast.warning(`You exited fullscreen ${exitCount} time${exitCount > 1 ? 's' : ''}. Please stay in fullscreen!`);
+        toast.warning(`You exited fullscreen ${exitCount} time${exitCount > 1 ? "s" : ""}. Please stay in fullscreen!`);
       } else if (exitCount >= 3) {
         setExitLocked(true);
         alert("You exited fullscreen too many times. Exam ended.");
@@ -155,7 +161,7 @@ const handleSubmit = useCallback(async () => {
 
   // ===================== Handlers =====================
   const handleStart = async () => {
-    setAttemptedStart(true); 
+    setAttemptedStart(true);
     if (!agree) {
       toast.warning("Please agree the checkbox before starting!");
       return;
@@ -168,8 +174,11 @@ const handleSubmit = useCallback(async () => {
   };
 
   const handleReEnterFullscreen = async () => {
-    if (document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen();
+    if (document.documentElement.requestFullscreen)
+      await document.documentElement.requestFullscreen();
+
     setShowWarning(false);
+    setBlockInteraction(false); 
   };
 
   const handleOptionChange = (qIndex, optionIndex) => {
@@ -224,7 +233,7 @@ const handleSubmit = useCallback(async () => {
             <FaCheckCircle className="text-success me-1" /> Correct: {result.correctCount} |{" "}
             <FaTimesCircle className="text-danger me-1" /> Wrong: {result.wrongCount} |{" "}
             <FaInfoCircle className="text-secondary me-1" /> Not Answered:{" "}
-            {quiz.questions.length - (result.correctCount + result.wrongCount)}
+            {result.notAnswered ?? quiz.questions.length - (result.correctCount + result.wrongCount)}
           </p>
 
           <div className="card p-4 mb-4">
@@ -301,7 +310,7 @@ const handleSubmit = useCallback(async () => {
             </p>
             <p>
               <FaInfoCircle className="text-secondary me-1" /> Not Answered:{" "}
-              <b>{quiz.questions.length - (result.correctCount + result.wrongCount)}</b>
+              <b>{result.notAnswered ?? quiz.questions.length - (result.correctCount + result.wrongCount)}</b>
             </p>
             <p className="text-muted">
               <FaClock className="me-1" /> Submitted at: <b>{submittedAt}</b>
@@ -328,7 +337,9 @@ const handleSubmit = useCallback(async () => {
           }}
         >
           <h3 className="text-center mb-3">{quiz.title}</h3>
-          <p><b>{quiz.description}</b></p>
+          <p>
+            <b>{quiz.description}</b>
+          </p>
 
           <ul className="mb-4" style={{ listStyleType: "disc", paddingLeft: "1.5rem" }}>
             <li>Read all questions carefully before answering.</li>
@@ -382,38 +393,38 @@ const handleSubmit = useCallback(async () => {
             <li>
               Time limit: <b>{quiz.timeLimit} minutes</b>
             </li>
-            <li>Submit before time runs out; otherwise, it will <b>auto-submit.</b></li>
+            <li>
+              Submit before time runs out; otherwise, it will <b>auto-submit.</b>
+            </li>
           </ul>
           <div className="form-check mt-3">
-          <div className="form-check mt-3">
-          <input
-            type="checkbox"
-            id="agree"
-            className={`form-check-input me-2 agree-checkbox ${!agree && attemptedStart ? "highlight-warning" : ""}`}
-            checked={agree}
-            onChange={(e) => setAgree(e.target.checked)}
-          />
-         <label
-          htmlFor="agree"
-          className="form-check-label"
-          style={
-            !agree && attemptedStart
-              ? {
-                  color: "#ffc107",
-                  fontWeight: 600,
-                  border: "3px solid #ffc107",
-                  boxShadow: "0 0 8px 2px #ffeb3b",
-                  padding: "4px 8px",
-                  borderRadius: "4px",
-                  transition: "box-shadow 0.3s ease, border 0.3s ease"
-                }
-              : {}
-          }
-        ><b>
-          I carefully Read all instructions</b>
-        </label>
-        </div>
-        </div>
+            <input
+              type="checkbox"
+              id="agree"
+              className={`form-check-input me-2 agree-checkbox ${!agree && attemptedStart ? "highlight-warning" : ""}`}
+              checked={agree}
+              onChange={(e) => setAgree(e.target.checked)}
+            />
+            <label
+              htmlFor="agree"
+              className="form-check-label"
+              style={
+                !agree && attemptedStart
+                  ? {
+                      color: "#ffc107",
+                      fontWeight: 600,
+                      border: "3px solid #ffc107",
+                      boxShadow: "0 0 8px 2px #ffeb3b",
+                      padding: "4px 8px",
+                      borderRadius: "4px",
+                      transition: "box-shadow 0.3s ease, border 0.3s ease",
+                    }
+                  : {}
+              }
+            >
+              <b>I carefully Read all instructions</b>
+            </label>
+          </div>
           <div className="text-center">
             <button className="btn btn-success btn-lg" onClick={handleStart}>
               Start Exam
@@ -435,12 +446,16 @@ const handleSubmit = useCallback(async () => {
   return (
     <div
       className="vh-100 vw-100 p-3 d-flex flex-column"
-      style={{ background: "linear-gradient(135deg, #6a85b6 0%, #bac8e0 100%)" }}
+      style={{
+        background: "linear-gradient(135deg, #6a85b6 0%, #bac8e0 100%)",
+        cursor: blockInteraction ? "not-allowed" : "auto",
+        pointerEvents: blockInteraction ? "none" : "auto", 
+      }}
     >
       {showWarning && exitCount < 3 && (
         <div
           className="position-fixed top-0 start-50 translate-middle-x mt-3 alert alert-warning shadow"
-          style={{ zIndex: 9999 }}
+          style={{ zIndex: 9999, pointerEvents: "auto", cursor: "auto" }} 
         >
           <FaExclamationTriangle className="me-2" />
           Fullscreen exited — Please re-enter to start
@@ -450,7 +465,7 @@ const handleSubmit = useCallback(async () => {
         </div>
       )}
 
-      {/* ---------- Question Palette (Multi-row Grid) ---------- */}
+      {/* ---------- Question Palette ---------- */}
       <div className="d-flex justify-content-center mb-3 mt-4">
         <div
           className="card p-3 shadow-sm bg-white"
@@ -462,10 +477,10 @@ const handleSubmit = useCallback(async () => {
           }}
         >
           {quiz.questions.map((_, index) => {
-            let btnClass = "btn btn-secondary btn-sm"; // default
-            if (answers[index] !== null) btnClass = "btn btn-success btn-sm"; // answered
-            else if (visited[index]) btnClass = "btn btn-danger btn-sm text-white"; // visited but not answered
-            else if (currentQ === index) btnClass = "btn btn-danger btn-sm text-white"; // current
+            let btnClass = "btn btn-secondary btn-sm";
+            if (answers[index] !== null) btnClass = "btn btn-success btn-sm";
+            else if (visited[index]) btnClass = "btn btn-danger btn-sm text-white";
+            else if (currentQ === index) btnClass = "btn btn-danger btn-sm text-white";
             return (
               <button
                 key={index}
@@ -540,10 +555,7 @@ const handleSubmit = useCallback(async () => {
                     checked={answers[currentQ] === i}
                     onChange={() => handleOptionChange(currentQ, i)}
                   />
-                  <label
-                    className="form-check-label w-100"
-                    htmlFor={`q${currentQ}-opt${i}`}
-                  >
+                  <label className="form-check-label w-100" htmlFor={`q${currentQ}-opt${i}`}>
                     {option}
                   </label>
                 </div>
