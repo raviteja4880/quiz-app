@@ -121,7 +121,7 @@ Building **QuizApp** strengthened my understanding of:
 **👨‍💻 Author:** Ravi Teja Kandula  
 **📧 Email:** [raviteja4880@gmail.com](mailto:raviteja4880@gmail.com)  
 **🔗 GitHub:** [@raviteja4880](https://github.com/raviteja4880)  
-**💼 LinkedIn:** [Ravi Teja Kandula](www.linkedin.com/in/RaviTejaKandula)
+**💼 LinkedIn:** [Ravi Teja Kandula](https://www.linkedin.com/in/RaviTejaKandula)
 
 ---
 
@@ -148,6 +148,3 @@ Secure authentication systems
   <img src="https://forthebadge.com/images/badges/built-with-love.svg" />
   <img src="https://forthebadge.com/images/badges/open-source.svg" />
 </p>
-
-
-npm start
