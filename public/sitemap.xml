@@ -10,13 +10,7 @@
   </url>
 
   <url>
-    <loc>https://idpquizapp.netlify.app/about</loc>
-    <lastmod>2025-11-26</lastmod>
-    <priority>0.80</priority>
-  </url>
-
-  <url>
-    <loc>https://idpquizapp.netlify.app/contact</loc>
+    <loc>https://idpquizapp.netlify.app/my-result</loc>
     <lastmod>2025-11-26</lastmod>
     <priority>0.64</priority>
   </url>
