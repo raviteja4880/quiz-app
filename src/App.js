@@ -36,26 +36,36 @@ function GlobalSEO() {
 
   return (
     <Helmet>
-      <title>Quiz App - Learn, practice & Grow</title>
-      <meta name="description" content="Engaging quiz platform offering a variety of topics to test your knowledge."/>
-      <meta name="keywords" content="QuizApp, IDP Quiz, Online Learning, MCQ, Educational App" />
-
+      <title>Quiz App - Learn, Practice & Grow</title>
+      <meta
+        name="description"
+        content="Engaging quiz platform offering a variety of topics to test your knowledge."
+      />
+      <meta
+        name="keywords"
+        content="QuizApp, IDP Quiz, Online Learning, MCQ, Educational App"
+      />
       <meta property="og:title" content="Quiz App - Test Your Knowledge" />
-      <meta property="og:description" content="Interactive quizzes across AI, DBMS, and web Development — built for learners."/>
+      <meta
+        property="og:description"
+        content="Interactive quizzes across AI, DBMS, and Web Development — built for learners."
+      />
       <meta property="og:type" content="website" />
       <meta property="og:url" content="https://idpquizapp.netlify.app" />
-      <meta property="og:image" content="https://idpquizapp.netlify.app/assets/quiz.png" />
-
+      <meta
+        property="og:image"
+        content="https://idpquizapp.netlify.app/assets/quiz.png"
+      />
       <script type="application/ld+json">{JSON.stringify(schema)}</script>
     </Helmet>
   );
 }
 
-// ProtectedRoute wrapper
+// ProtectedRoute Wrapper
 const ProtectedRoute = ({ isLoggedIn, children }) =>
   isLoggedIn ? children : <Navigate to="/" replace />;
 
-function AppWrapper() {
+function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
     () => localStorage.getItem("isLoggedIn") === "true"
   );
@@ -64,10 +74,6 @@ function AppWrapper() {
     localStorage.setItem("isLoggedIn", isLoggedIn);
   }, [isLoggedIn]);
 
-  return <App isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />;
-}
-
-function App({ isLoggedIn, setIsLoggedIn }) {
   const location = useLocation();
   const hideNavbar = location.pathname.startsWith("/quiz/");
 
@@ -95,7 +101,10 @@ function App({ isLoggedIn, setIsLoggedIn }) {
 
       <Routes>
         {/* Public routes */}
-        <Route path="/" element={<LandingPage setIsLoggedIn={setIsLoggedIn} />} />
+        <Route
+          path="/"
+          element={<LandingPage setIsLoggedIn={setIsLoggedIn} />}
+        />
 
         {/* Protected routes */}
         {protectedRoutes.map((route) => (

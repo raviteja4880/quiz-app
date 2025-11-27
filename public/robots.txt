@@ -1,4 +1,9 @@
 User-agent: *
 Allow: /
 
+# Disallow internal/private routes
+Disallow: /admin
+Disallow: /quiz
+Disallow: /results
+
 Sitemap: https://idpquizapp.netlify.app/sitemap.xml
