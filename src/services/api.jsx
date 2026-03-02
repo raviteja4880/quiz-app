@@ -39,7 +39,15 @@ export const resultAPI = {
   getByEmail: (email) => API.get(`/quiz/results/user/${email}`),
 };
 
+// Dashboard API
 export const dashboardAPI = {
   getPerformanceStats: () => API.get("/quiz/performance/stats"),
+  getStudentDashboard: () => API.get("/dashboard/student"),
+};
+
+// User API
+export const userAPI = {
+  updateProfile: (payload) => API.put("/user/update", payload),
+  changePassword: (payload) => API.put("/user/change-password", payload),
 };
 

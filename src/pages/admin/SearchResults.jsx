@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { resultAPI } from "../services/api";
+import { resultAPI } from "../../services/api";
 import { Link } from "react-router-dom";
-import Loader from "./Loader";
+import Loader from "../../components/Loader";
 import {
   FaSearch,
   FaExclamationTriangle,

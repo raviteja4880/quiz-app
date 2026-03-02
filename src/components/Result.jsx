@@ -42,7 +42,7 @@ function Result() {
   return (
     <div
       className="container py-5 result-container"
-      style={{ backgroundColor: "#f7f8fc", minHeight: "100vh" }}
+      style={{ backgroundColor: "#f7f8fc", minHeight: "100vh", maxWidth: "900px", margin: "0 auto" }}
     >
       {/* ---------- Summary Card ---------- */}
       <div

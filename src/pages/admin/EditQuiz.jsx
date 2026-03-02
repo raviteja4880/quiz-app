@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { quizAPI } from "../services/api";
-import Loader from "./Loader";
+import { quizAPI } from "../../services/api";
+import Loader from "../../components/Loader";
 import { FaCheckCircle, FaExclamationCircle, FaTrash, FaPlusCircle } from "react-icons/fa";
 import { toast } from "react-toastify";
 

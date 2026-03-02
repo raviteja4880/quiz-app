@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { FaBars, FaTimes, FaHome, FaList, FaChartBar, FaUser, FaSignOutAlt, FaTachometerAlt, FaSearch } from "react-icons/fa";
 
 function NavBar({ isLoggedIn, setIsLoggedIn }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [user, setUser] = useState(() => JSON.parse(localStorage.getItem("user")));
-  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-  const profileDropdownRef = useRef();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const mobileMenuRef = useRef();
 
   useEffect(() => {
     const handleStorageChange = () => setUser(JSON.parse(localStorage.getItem("user")));
@@ -16,140 +17,177 @@ function NavBar({ isLoggedIn, setIsLoggedIn }) {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
-        setShowProfileDropdown(false);
+      // Close mobile menu when clicking on overlay (outside the menu)
+      if (mobileMenuOpen && mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
+        // Only close if clicking on the overlay (not on toggle button)
+        const toggleBtn = document.querySelector('.mobile-toggle');
+        if (toggleBtn && !toggleBtn.contains(event.target)) {
+          setMobileMenuOpen(false);
+        }
       }
     };
+    
     const handleEsc = (event) => {
-      if (event.key === "Escape") setShowProfileDropdown(false);
+      if (event.key === "Escape") {
+        setMobileMenuOpen(false);
+      }
     };
+    
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("keydown", handleEsc);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleEsc);
     };
-  }, []);
+  }, [mobileMenuOpen]);
 
   useEffect(() => {
-    document.body.style.overflow = showProfileDropdown ? "hidden" : "auto";
-  }, [showProfileDropdown]);
+    document.body.style.overflow = mobileMenuOpen ? "hidden" : "auto";
+  }, [mobileMenuOpen]);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("tokenExpiry");
     setIsLoggedIn(false);
-    setShowProfileDropdown(false);
+    setMobileMenuOpen(false);
     navigate("/");
   };
 
   if (!isLoggedIn) return null;
 
+  const navLinks = [
+    { path: "/home", label: "Home", icon: <FaHome /> },
+    { path: "/quizlist", label: "Quiz List", icon: <FaList /> },
+    ...(user?.role === "user" ? [{ path: "/myresults", label: "My Results", icon: <FaChartBar /> }] : []),
+    ...(user?.role === "admin" ? [
+      { path: "/admin", label: "Admin Panel", icon: <FaUser /> },
+      { path: "/search-results", label: "Search Results", icon: <FaSearch /> },
+    ] : []),
+  ];
+
   return (
-    <nav className="navbar navbar-expand-lg shadow-sm">
-      <div className="container-fluid">
-        {/* Logo */}
-        <Link className="navbar-brand fw-bold fs-4" to="/home">
-          Quiz App
-        </Link>
+    <>
+      <nav className="navbar">
+        <div className="navbar-inner">
+          {/* Logo - Left */}
+          <Link className="navbar-brand" to="/home">
+            Quiz App
+          </Link>
 
-        {/* Navbar Links */}
-        <div className="d-flex align-items-center ms-auto">
-          <div className="d-flex gap-2 nav-buttons-wrapper">
-            <Link
-              className={`nav-btn ${location.pathname === "/home" ? "active" : ""}`}
-              to="/home"
+          {/* Right Side - Toggle & Nav */}
+          <div className="navbar-right">
+            {/* Mobile Toggle - Right */}
+            <button 
+              className="mobile-toggle"
+              onClick={(e) => {
+                e.stopPropagation();
+                setMobileMenuOpen(!mobileMenuOpen);
+              }}
+              aria-label="Toggle menu"
             >
-              Home
-            </Link>
-            <Link
-              className={`nav-btn ${location.pathname === "/quizlist" ? "active" : ""}`}
-              to="/quizlist"
-            >
-              Quiz List
-            </Link>
-            {user?.role === "user" && (
-              <Link
-                className={`nav-btn ${location.pathname === "/myresults" ? "active" : ""}`}
-                to="/myresults"
-              >
-                My Results
-              </Link>
-            )}
-            {user?.role === "admin" && (
-              <>
-                <Link
-                  className={`nav-btn ${location.pathname === "/admin" ? "active" : ""}`}
-                  to="/admin"
-                >
-                  Admin Panel
-                </Link>
-                <Link
-                  className={`nav-btn ${location.pathname === "/search-results" ? "active" : ""}`}
-                  to="/search-results"
-                >
-                  Search Results
-                </Link>
-              </>
-            )}
-          </div>
-
-          {/* Profile Dropdown */}
-          <div className="position-relative ms-3" ref={profileDropdownRef}>
-            <button
-              className="profile-btn d-flex align-items-center"
-              onClick={() => setShowProfileDropdown((prev) => !prev)}
-            >
-              <div className="avatar-circle me-2">
-                {user?.name?.charAt(0).toUpperCase()}
-              </div>
-              <span className="fw-semibold">{user?.name}</span>
+              {mobileMenuOpen ? <FaTimes /> : <FaBars />}
             </button>
 
-            {showProfileDropdown && (
-              <div className="dropdown-card">
-                <div className="d-flex align-items-center px-3 py-3 border-bottom">
-                  <div className="avatar-circle me-2">
-                    {user?.name?.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <div className="fw-semibold">{user?.name}</div>
-                    <small className="text-muted">{user?.email}</small>
-                  </div>
-                </div>
-                <div className="d-flex flex-column">
-                  <div className="dropdown-role px-3 py-2">
-                    <i className="bi bi-shield-lock me-2"></i> Role: {user?.role}
-                  </div>
-
-                  {/* Dashboard link for users */}
-                  {user?.role === "user" && (
-                    <button
-                      className="dropdown-item-btn fw-semibold"
-                      onClick={() => {
-                        setShowProfileDropdown(false);
-                        navigate("/student-dashboard");
-                      }}
-                    >
-                      <i className="bi bi-speedometer2 me-2"></i> Dashboard
-                    </button>
-                  )}
-
-                  <button
-                    className="dropdown-item-btn text-danger fw-semibold"
-                    onClick={handleLogout}
+            {/* Desktop Nav */}
+            <div className="desktop-nav">
+              <div className="nav-links">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.path}
+                    className={`nav-link ${location.pathname === link.path ? "active" : ""}`}
+                    to={link.path}
                   >
-                    <i className="bi bi-box-arrow-right me-2 text-danger"></i> Logout
-                  </button>
-                </div>
+                    {link.label}
+                  </Link>
+                ))}
               </div>
-            )}
+
+              {/* Profile Link - navigates to profile page */}
+              <button
+                className="profile-btn"
+                onClick={() => navigate("/profile")}
+              >
+                <div className="avatar-circle">
+                  {user?.name?.charAt(0).toUpperCase()}
+                </div>
+                <span className="fw-semibold">{user?.name}</span>
+              </button>
+            </div>
           </div>
+        </div>
+      </nav>
+
+      {/* Mobile Overlay */}
+      <div 
+        className={`mobile-overlay ${mobileMenuOpen ? "active" : ""}`}
+        onClick={() => setMobileMenuOpen(false)}
+      />
+
+      {/* Mobile Menu - Slides from left */}
+      <div className={`mobile-menu ${mobileMenuOpen ? "open" : ""}`} ref={mobileMenuRef}>
+        <div className="mobile-menu-header">
+          <div className="user-info">
+            <div className="avatar-circle large">
+              {user?.name?.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <div className="fw-semibold">{user?.name}</div>
+              <small className="text-muted">{user?.email}</small>
+            </div>
+          </div>
+        </div>
+
+        <div className="mobile-menu-links">
+          {navLinks.map((link) => (
+            <Link
+              key={link.path}
+              className={`mobile-link ${location.pathname === link.path ? "active" : ""}`}
+              to={link.path}
+            >
+              <span className="link-icon">{link.icon}</span>
+              {link.label}
+            </Link>
+          ))}
+
+          {/* Profile Link in Mobile Menu */}
+          <Link
+            className={`mobile-link ${location.pathname === "/profile" ? "active" : ""}`}
+            to="/profile"
+          >
+            <span className="link-icon"><FaUser /></span>
+            My Profile
+          </Link>
+
+          {user?.role === "user" && (
+            <Link
+              className="mobile-link"
+              to="/student-dashboard"
+            >
+              <span className="link-icon"><FaTachometerAlt /></span>
+              Dashboard
+            </Link>
+          )}
+
+          <button
+            className="mobile-link text-danger"
+            onClick={handleLogout}
+          >
+            <span className="link-icon"><FaSignOutAlt /></span>
+            Logout
+          </button>
+        </div>
+
+        <div className="mobile-menu-footer">
+          <small className="text-muted">Role: {user?.role}</small>
         </div>
       </div>
 
-      {/* Custom Styles */}
       <style>{`
         .navbar {
           background: #fff;
@@ -157,40 +195,84 @@ function NavBar({ isLoggedIn, setIsLoggedIn }) {
           position: sticky;
           top: 0;
           z-index: 1050;
+          width: 100%;
         }
 
-        .nav-buttons-wrapper .nav-btn {
-          background: #f5f5f5;
+        .navbar-inner {
+          width: 100%;
+          padding: 0 20px;
+          height: 60px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin: 0 auto;
+          max-width: 100%;
+        }
+
+        .navbar-brand {
+          font-size: 1.5rem;
+          font-weight: 700;
           color: #333;
+          text-decoration: none;
+        }
+
+        .navbar-right {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+        }
+
+        .mobile-toggle {
+          display: none;
+          background: none;
           border: none;
+          font-size: 1.5rem;
+          cursor: pointer;
+          color: #333;
+          padding: 5px;
+        }
+
+        .desktop-nav {
+          display: flex;
+          align-items: center;
+          gap: 20px;
+        }
+
+        .nav-links {
+          display: flex;
+          gap: 10px;
+        }
+
+        .nav-link {
+          padding: 8px 18px;
           border-radius: 50px;
           font-weight: 500;
-          padding: 8px 18px;
-          min-width: 110px;
-          text-align: center;
+          color: #333;
+          text-decoration: none;
           transition: all 0.3s ease;
-          text-decoration: none;
+          background: #f5f5f5;
         }
 
-        .nav-buttons-wrapper .nav-btn:hover {
+        .nav-link:hover {
           background: #eaeaea;
-          color: #000;
-          text-decoration: none;
         }
 
-        .nav-buttons-wrapper .nav-btn.active {
+        .nav-link.active {
           background: #333;
           color: #fff;
-          text-decoration: none;
         }
 
         .profile-btn {
-          border: none;
+          display: flex;
+          align-items: center;
+          gap: 8px;
           background: none;
+          border: none;
           cursor: pointer;
           padding: 6px 10px;
           border-radius: 8px;
           transition: background 0.2s ease;
+          font-size: 1rem;
         }
 
         .profile-btn:hover {
@@ -201,72 +283,135 @@ function NavBar({ isLoggedIn, setIsLoggedIn }) {
           width: 36px;
           height: 36px;
           border-radius: 50%;
-          background: #e0e0e0;
+          background: #667eea;
           display: flex;
           align-items: center;
           justify-content: center;
           font-weight: 600;
           font-size: 15px;
-          color: #333;
+          color: #fff;
         }
 
-        .dropdown-item-btn {
-          background: none;
-          border: none;
-          text-align: left;
-          padding: 10px 16px;
-          font-size: 14px;
-          color: #333;
+        .avatar-circle.large {
+          width: 48px;
+          height: 48px;
+          font-size: 20px;
+        }
+
+        /* Mobile Overlay */
+        .mobile-overlay {
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+          z-index: 1098;
+          opacity: 0;
+          visibility: hidden;
+          transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .mobile-overlay.active {
+          opacity: 1;
+          visibility: visible;
+        }
+
+        /* Mobile Menu - Left slide */
+        .mobile-menu {
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          width: 70%;
+          max-width: 300px;
+          background: #fff;
+          z-index: 1100;
+          transform: translateX(-100%);
+          transition: transform 0.3s ease-in-out;
+          box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+          display: flex;
+          flex-direction: column;
+        }
+
+        .mobile-menu.open {
+          transform: translateX(0);
+        }
+
+        .mobile-menu-header {
+          padding: 20px;
+          border-bottom: 1px solid #eee;
+        }
+
+        .user-info {
           display: flex;
           align-items: center;
-          cursor: pointer;
-          transition: background 0.2s ease;
+          gap: 12px;
         }
 
-        .dropdown-item-btn:hover {
+        .mobile-menu-links {
+          flex: 1;
+          padding: 20px;
+          overflow-y: auto;
+        }
+
+        .mobile-link {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 15px;
+          border-radius: 10px;
+          color: #333;
+          text-decoration: none;
+          font-size: 16px;
+          font-weight: 500;
+          transition: all 0.2s ease;
+          background: none;
+          border: none;
+          width: 100%;
+          cursor: pointer;
+          margin-bottom: 5px;
+        }
+
+        .mobile-link:hover {
           background: #f5f5f5;
         }
 
-        .dropdown-card {
-          position: absolute;
-          top: 120%;
-          right: 0;
-          width: 260px;
-          z-index: 2000;
-          border-radius: 10px;
-          background: #fff;
-          box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-          overflow: hidden;
-          animation: fadeIn 0.15s ease-out;
+        .mobile-link.active {
+          background: #667eea;
+          color: #fff;
         }
 
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(-5px); }
-          to { opacity: 1; transform: translateY(0); }
+        .link-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 24px;
+          font-size: 18px;
         }
 
+        .mobile-menu-footer {
+          padding: 20px;
+          border-top: 1px solid #eee;
+          text-align: center;
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
-          .nav-buttons-wrapper .nav-btn {
-            min-width: 90px;
-            padding: 6px 10px;
-            font-size: 14px;
-          }
-          .profile-btn span {
+          .desktop-nav {
             display: none;
           }
-        }
-
-        @media (max-width: 480px) {
-          .nav-buttons-wrapper {
-            flex-wrap: wrap;
-            gap: 4px;
+          .mobile-toggle {
+            display: block;
           }
-          .nav-buttons-wrapper .nav-btn {
-            flex: 1 1 100px;
+          .mobile-menu {
+            display: flex;
           }
         }
       `}</style>
-    </nav>
+    </>
   );
 }
 

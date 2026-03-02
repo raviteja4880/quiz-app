@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { quizAPI } from "../services/api";
+import { quizAPI } from "../../services/api";
 import {
   FaTrashAlt,
   FaEdit,

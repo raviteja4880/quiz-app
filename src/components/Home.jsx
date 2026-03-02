@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { SiGmail } from "react-icons/si";
 import {
-  FaChalkboardTeacher,
   FaChartLine,
   FaPlayCircle,
   FaGithub,
@@ -12,6 +11,12 @@ import {
   FaBolt,
   FaLaptopCode,
   FaEnvelope,
+  FaRocket,
+  FaTrophy,
+  FaBrain,
+  FaClock,
+  FaArrowRight,
+  FaTimes,
 } from "react-icons/fa";
 
 function Home() {
@@ -21,6 +26,7 @@ function Home() {
 
   const [showAbout, setShowAbout] = useState(false);
   const [showContact, setShowContact] = useState(false);
+  const [hoveredFeature, setHoveredFeature] = useState(null);
 
   const aboutRef = useRef();
   const contactRef = useRef();
@@ -45,308 +51,188 @@ function Home() {
 
   const features = [
     {
-      icon: <FaChalkboardTeacher size={40} className="text-primary" />,
+      icon: <FaBrain size={32} />,
       title: "Expert Questions",
-      desc: "Curated quizzes to enhance your learning experience.",
+      desc: "Curated quizzes to enhance your learning experience with AI-powered adaptive testing.",
+      color: "#4F46E5",
+      link: "/quizlist",
     },
     {
-      icon: <FaChartLine size={40} className="text-success" />,
+      icon: <FaChartLine size={32} />,
       title: "Track Performance",
-      desc: "View your results and monitor improvement over time.",
+      desc: "View your results and monitor improvement over time with detailed analytics.",
+      color: "#10B981",
       link: "/myresults",
     },
     {
-      icon: <FaPlayCircle size={40} className="text-danger" />,
+      icon: <FaTrophy size={32} />,
       title: "Instant Feedback",
-      desc: "Get immediate results with correct and wrong answers highlighted.",
+      desc: "Get immediate results with correct and wrong answers highlighted for better learning.",
+      color: "#F59E0B",
+      link: null,
+    },
+    {
+      icon: <FaClock size={32} />,
+      title: "Timed Challenges",
+      desc: "Test your knowledge under pressure with timed quiz challenges.",
+      color: "#7C3AED",
+      link: "/quizlist",
     },
   ];
 
   return (
     <div
       style={{
-        background: "linear-gradient(135deg, #ffd6b8 0%, #ffbfa0 100%)",
-        color: "#333",
+        background: "linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%)",
+        color: "#fff",
         overflowX: "hidden",
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
-      {/* 🔹 Fullscreen Hero Section */}
+      {/* HERO SECTION */}
       <section
-        className="d-flex flex-column justify-content-center align-items-center text-center px-3"
-        style={{ minHeight: "100vh", paddingBottom: "3rem" }}
+        className="flex-grow-1 d-flex align-items-center justify-content-center text-center px-3"
+        style={{
+          paddingTop: "100px",
+          paddingBottom: "60px",
+        }}
       >
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="w-100"
-          style={{ maxWidth: "960px" }}
+          transition={{ duration: 0.8 }}
+          className="container"
+          style={{ maxWidth: "1100px" }}
         >
-          {/* Hero Title */}
-          <motion.h1
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="display-4 mb-3 fw-bold text-dark"
+          {/* Badge */}
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              background: "rgba(79,70,229,0.2)",
+              padding: "8px 18px",
+              borderRadius: "50px",
+              marginBottom: "25px",
+              border: "1px solid rgba(79,70,229,0.4)",
+            }}
           >
-            <FaUserGraduate className="me-2 text-warning" />
-            Welcome {user?.name ? user.name : "Guest"}!
-          </motion.h1>
+            <FaRocket style={{ color: "#F59E0B", fontSize: "14px" }} />
+            <span style={{ fontSize: "0.9rem" }}>Welcome back</span>
+          </div>
 
-          {/* Hero Subtitle */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 0.4 }}
-            className="lead mb-5 text-muted"
+          {/* Title */}
+          <h1 className="fw-bold mb-4">
+            Hello {user?.name || "Guest"}{" "}
+            <FaUserGraduate style={{ color: "#4F46E5" }} />
+          </h1>
+
+          {/* Subtitle */}
+          <p
+            className="lead mb-5"
+            style={{
+              maxWidth: "650px",
+              margin: "0 auto",
+              color: "#94A3B8",
+            }}
           >
-            Test your knowledge, track progress, and challenge yourself with our
-            interactive quizzes.
-          </motion.p>
+            Ready to challenge your mind? Explore quizzes, track your progress,
+            and become a{" "}
+            <span style={{ color: "#10B981", fontWeight: 600 }}>
+              knowledge champion
+            </span>
+            !
+          </p>
 
-          {/* 🔹 Features */}
-          <div className="row mb-5 g-3">
+          {/* CTA Buttons */}
+          <div className="d-flex justify-content-center gap-3 flex-wrap mb-5">
+            <Link
+              to="/quizlist"
+              className="btn btn-lg px-4 py-3"
+              style={{
+                background: "#4F46E5",
+                color: "#fff",
+                borderRadius: "12px",
+                minWidth: "180px",
+              }}
+            >
+              <FaPlayCircle className="me-2" />
+              Start Quiz
+            </Link>
+
+            <Link
+              to="/myresults"
+              className="btn btn-lg px-4 py-3"
+              style={{
+                background: "rgba(255,255,255,0.08)",
+                color: "#E0E7FF",
+                border: "1px solid rgba(255,255,255,0.15)",
+                borderRadius: "12px",
+                minWidth: "180px",
+              }}
+            >
+              <FaChartLine className="me-2" />
+              My Results
+            </Link>
+          </div>
+
+          {/* Features */}
+          <h5 className="mb-4">Why Choose QuizApp?</h5>
+
+          <div className="row g-4 justify-content-center">
             {features.map((f, idx) => {
               const Wrapper = f.link ? Link : "div";
               return (
-                <div className="col-12 col-sm-6 col-md-4" key={idx}>
+                <div className="col-12 col-sm-6 col-lg-3" key={idx}>
                   <Wrapper
                     to={f.link || "#"}
                     style={{ textDecoration: "none", color: "inherit" }}
                   >
-                    <motion.div
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.8, delay: 0.6 + idx * 0.2 }}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="p-4 rounded-4"
+                    <div
+                      className="p-4 h-100 text-center"
                       style={{
-                        background: "rgba(255, 255, 255, 0.3)",
-                        backdropFilter: "blur(8px)",
-                        boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
+                        background: "rgba(30,41,59,0.6)",
+                        borderRadius: "16px",
+                        border: "1px solid rgba(255,255,255,0.08)",
                       }}
                     >
-                      <div className="mb-3">{f.icon}</div>
-                      <h5 className="fw-bold">{f.title}</h5>
-                      <p className="text-muted">{f.desc}</p>
-                    </motion.div>
+                      <div
+                        style={{
+                          marginBottom: "15px",
+                          color: f.color,
+                        }}
+                      >
+                        {f.icon}
+                      </div>
+
+                      <h6 className="fw-bold">{f.title}</h6>
+                      <p style={{ fontSize: "0.9rem", color: "#94A3B8" }}>
+                        {f.desc}
+                      </p>
+                    </div>
                   </Wrapper>
                 </div>
               );
             })}
           </div>
-
-          {/* 🔹 CTA */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 1.2 }}
-            className="d-flex justify-content-center gap-3 flex-wrap mb-5"
-          >
-            <Link
-              to="/quizlist"
-              className="btn btn-dark btn-lg px-5 py-3 shadow-sm rounded-pill"
-              style={{ minWidth: "220px" }}
-            >
-              View All Quizzes
-            </Link>
-          </motion.div>
         </motion.div>
       </section>
 
-      {/* 🔹 Footer Section */}
+      {/* FOOTER */}
       <footer
-        className="text-dark py-5"
+        className="text-center py-4"
         style={{
-          background: "linear-gradient(135deg, #fbb583ff 0%, #bb8c75ff 100%)",
+          background: "rgba(15,23,42,0.9)",
+          borderTop: "1px solid rgba(255,255,255,0.05)",
         }}
       >
-        <div className="container text-center pt-4">
-          <h5 className="fw-bold mb-2">QuizApp</h5>
-          <p className="mb-4 text-muted">
-            Interactive quizzes to test knowledge, track progress, and improve
-            skills.
-          </p>
-
-          {/* Social Links */}
-          <div className="d-flex justify-content-center gap-3 mb-4 flex-wrap">
-            <a
-              href="https://github.com/raviteja4880"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-dark"
-            >
-              <FaGithub size={24} />
-            </a>
-            <a
-              href="https://www.linkedin.com/in/RaviTejaKandula"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-dark"
-            >
-              <FaLinkedin size={24} />
-            </a>
-            <a
-              href="mailto:ravitejakandul@gmail.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-dark"
-            >
-              <SiGmail size={24} />
-            </a>
-          </div>
-
-          {/* Footer Links */}
-          <div
-            className="d-flex justify-content-center align-items-center gap-4 flex-wrap"
-            style={{ marginTop: "1rem" }}
-          >
-            <button
-              className="btn btn-link text-dark fw-semibold text-decoration-none p-0"
-              onClick={() => {
-                setShowAbout(true);
-                setShowContact(false);
-              }}
-            >
-              About
-            </button>
-            <button
-              className="btn btn-link text-dark fw-semibold text-decoration-none p-0"
-              onClick={() => {
-                setShowContact(true);
-                setShowAbout(false);
-              }}
-            >
-              Contact
-            </button>
-          </div>
-
-          <p className="text-muted mt-4 mb-0 small">
-            © {new Date().getFullYear()} QuizApp. All rights reserved.
-          </p>
-        </div>
+        <h5>QuizApp</h5>
+        <p style={{ color: "#94A3B8" }}>
+          © {new Date().getFullYear()} QuizApp. All rights reserved.
+        </p>
       </footer>
-
-      {/* 🔹 Overlay Modals */}
-      <AnimatePresence>
-        {(showAbout || showContact) && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{
-              position: "fixed",
-              inset: 0,
-              background: "rgba(0,0,0,0.6)",
-              backdropFilter: "blur(6px)",
-              zIndex: 2000,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              padding: "1rem",
-            }}
-          >
-            {showAbout && (
-              <motion.div
-                ref={aboutRef}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.4 }}
-                className="p-4 rounded-4 text-start"
-                style={{
-                  background: "rgba(255,255,255,0.95)",
-                  maxWidth: "480px",
-                  width: "100%",
-                  boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
-                }}
-              >
-                <h4 className="fw-bold mb-3 text-center">About QuizApp</h4>
-                <p className="text-muted small">
-                  QuizApp is an interactive platform designed to make learning
-                  fun and engaging. Whether you're a student or a professional,
-                  test your skills with expert-curated quizzes.
-                </p>
-                <ul className="text-muted small mb-3">
-                  <li><FaUserGraduate className="me-1" /> Roles: User & Admin</li>
-                  <li><FaChartLine className="me-1" /> Features: Quizzes, Results, Performance Tracking</li>
-                  <li><FaLaptopCode className="me-1" /> Tech: React, Node.js, MongoDB</li>
-                  <li><FaBolt className="me-1" /> Developer: Ravi Teja Kandula</li>
-                </ul>
-                <button
-                  className="btn btn-dark w-100"
-                  onClick={() => setShowAbout(false)}
-                >
-                  Close
-                </button>
-              </motion.div>
-            )}
-
-            {showContact && (
-              <motion.div
-                ref={contactRef}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.4 }}
-                className="p-4 rounded-4"
-                style={{
-                  background: "rgba(255,255,255,0.95)",
-                  maxWidth: "500px",
-                  width: "100%",
-                  boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
-                }}
-              >
-                <h4 className="fw-bold mb-3 text-center">Contact Me</h4>
-                <form
-                  id="contact-form"
-                  action="https://formspree.io/f/mwpnevjj"
-                  method="POST"
-                >
-                  <div className="input-group mb-2">
-                    <span className="input-group-text"><FaUserGraduate /></span>
-                    <input
-                      type="text"
-                      name="name"
-                      placeholder="Your Name"
-                      required
-                      className="form-control"
-                    />
-                  </div>
-                  <div className="input-group mb-2">
-                    <span className="input-group-text"><FaEnvelope /></span>
-                    <input
-                      type="email"
-                      name="email"
-                      placeholder="Your Email"
-                      required
-                      className="form-control"
-                    />
-                  </div>
-                  <textarea
-                    name="message"
-                    rows="4"
-                    placeholder="Your Message"
-                    required
-                    className="form-control mb-2"
-                  ></textarea>
-                  <button type="submit" className="btn btn-dark w-100">
-                    Send
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary w-100 mt-2"
-                    onClick={() => setShowContact(false)}
-                  >
-                    Cancel
-                  </button>
-                </form>
-              </motion.div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
