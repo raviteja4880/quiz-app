@@ -1,22 +1,14 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { SiGmail } from "react-icons/si";
+import { motion } from "framer-motion";
 import {
   FaChartLine,
   FaPlayCircle,
-  FaGithub,
-  FaLinkedin,
   FaUserGraduate,
-  FaBolt,
-  FaLaptopCode,
-  FaEnvelope,
   FaRocket,
   FaTrophy,
   FaBrain,
   FaClock,
-  FaArrowRight,
-  FaTimes,
 } from "react-icons/fa";
 
 function Home() {
@@ -24,29 +16,9 @@ function Home() {
     return JSON.parse(localStorage.getItem("user")) || {};
   });
 
-  const [showAbout, setShowAbout] = useState(false);
-  const [showContact, setShowContact] = useState(false);
-  const [hoveredFeature, setHoveredFeature] = useState(null);
-
-  const aboutRef = useRef();
-  const contactRef = useRef();
-
   useEffect(() => {
     const savedUser = JSON.parse(localStorage.getItem("user")) || {};
     setUser(savedUser);
-  }, []);
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (aboutRef.current && !aboutRef.current.contains(e.target)) {
-        setShowAbout(false);
-      }
-      if (contactRef.current && !contactRef.current.contains(e.target)) {
-        setShowContact(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const features = [
